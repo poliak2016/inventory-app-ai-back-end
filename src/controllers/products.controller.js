@@ -1,8 +1,11 @@
-export const getProducts = (req, res) => {
-  res.status(200).json({status: "List of products"});
+import {
+   getAll 
+  } from "../services/products.service.js";
+
+export const getProducts = async (req, res) => {
+  const products = await getAll();
+  res.status(200).json(products);
 }
 
-export const createProduct = (req, res) => {
-  res.status(201).json({status: "Product created"});
-}
+
 

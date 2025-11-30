@@ -1,3 +1,3 @@
-export const getAll = async () =>{
-  
-}
+import {products} from "../data/products.sample.js";
+
+export const getAll = async () => products;
