@@ -7,6 +7,6 @@ const app = express();
 app.use(express.json());
 
 app.use("/health", healthRoutes);
-app.use("/product", productRoutes);
+app.use("/products", productRoutes);
 
 export default app;
