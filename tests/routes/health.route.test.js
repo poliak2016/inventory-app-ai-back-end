@@ -1,6 +1,6 @@
 /* eslint-env jest */
 import request from "supertest";
-import app from "../app.js";
+import app from "../../src/app.js";
 
 describe("health check api", () => {
   it("should return status 200 and status OK", async () => {
