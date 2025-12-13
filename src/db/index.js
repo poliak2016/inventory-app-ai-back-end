@@ -1,10 +1,14 @@
 import pkg from "pg";
 const {Pool} = pkg;
+import config from "../config/config.js"
 
 export const pool = new Pool({
-  user: "postrges",
-  host: "localhost",
-  database: "inventory_app",
-  password: "qwerty",
-  port: 5432
-})
+  host: config.db.host,
+  port: config.db.port,
+  user: config.db.user,
+  password: config.db.password,
+  database: config.db.database,
+});
+
+
+
