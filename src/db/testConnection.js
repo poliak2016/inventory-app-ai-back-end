@@ -1,13 +1,11 @@
 // backend/src/db/testConnection.js
-import { pool } from "./index.js";
+import { pool } from "./pool.js";
 
 export const  testDB = async () => {
   try {
-    const res = await pool.query("SELECT NOW()"); // ✅ use await
-    console.log("DB connected:", res.rows[0]);    // { now: '2025-12-12T...' }
+    const res = await pool.query("SELECT NOW()"); 
+    console.log("DB connected:", res.rows[0]);  
   } catch (err) {
     console.error("Connection error:", err);
-  } finally {
-    await pool.end();
-  }
 }
+};

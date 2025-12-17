@@ -1,52 +1,87 @@
 import { v4 as uuid } from "uuid";
-import {products} from "../data/products.sample.js";
+import {query} from "../db/query.js";
 import { ValidationError } from "../errors/ValidationError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
+  
+export const getAll = async () => {
+   const result = await  query(`
+    SELECT * 
+    FROM products 
+    ORDER BY created_at DESC
+    `);
+return result.rows;
+};
 
-export const getAll = async () => [...products];
+export const getProductId = async (id) => {
 
-export const getProductId = async (id) => products.find((p) => p.id === id) || null; 
+  if (!id){
+    throw new ValidationError("Product id is required")
+  }
+  const result = await query(
+    `
+    SELECT *
+    FROM products
+    WHERE id = $1
+    `,
+  [id]
+)
+    return result.rows[0] || null
+}
 
-export const createProduct = async (productData) => {
+export const createProduct = async ({name, price, quantity}) => {
 
-  const {name, quantity, price, ...rest} = productData;
-
-   if (!name || quantity===null || price === null){
+  if (!name || quantity===null || price === null){
     throw new ValidationError("name, quantity, price are required")
   }
 
-  const newProduct = {
-    id: uuid(),
-    date: new Date(),
-    name,
-    quantity,
-    price,
-    ...rest
-  }
+  const id =uuid();
+  const result = await query(
+    `
+    INSERT INTO products (id, name, price, quantity)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *
+    ` ,
+    [id, name, price, quantity]
+  );
 
-  products.push(newProduct)
-  return newProduct
+  return result.rows[0]
 }
 
 export const updateProduct = async (id, productData) => {
-  const index = products.findIndex((p)=> p.id === id);
-  if (index === -1){
-    return null 
+  if (!id){
+    throw new ValidationError("Product id is required")
   }
-  const updatedProduct = {
-    ...products[index],
-    ...productData,
-    updatedAt: new Date()
-  }
-  products[index] = updatedProduct
-  return updatedProduct
+
+  const {name, price, quantity} =productData;
+
+  const result = await query(
+    `
+    UPDATE products
+    SET 
+      name = $2, 
+      price= $3, 
+      quantity = $4 
+    WHERE id = $1
+    RETURNING *
+    `,
+  [id, name, price, quantity]
+)
+    return result.rows[0] || null
 }
 
 export const deleteProduct = async (id) => {
-  const index = products.findIndex((p)=> p.id === id);
-  if (index === -1){
-    throw new NotFoundError("product not found")
-}
-products.splice(index, 1)
-return true
+
+   if (!id){
+    throw new ValidationError("Product id is required")
+  }
+const result = await query (
+  `
+  DELETE FROM products 
+  WHERE id = $1
+  RETURNING *
+  `,
+  [id]
+)
+
+return result[0] || null
 }
