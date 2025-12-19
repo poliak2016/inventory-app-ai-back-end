@@ -34,7 +34,7 @@ describe("products API", () => {
 
   it("should update product data", async() => {
     const updateProductTest = {
-      "price": 10,
+      "price": "10.00",
       "quantity" : 1,
       "name": "UpdateTest"
     };
@@ -44,7 +44,7 @@ describe("products API", () => {
 
     expect(res.status).toBe(200)
     expect(res.body.data).toMatchObject(updateProductTest)
-    expect(res.body.data.price).toBe(10)
+    expect(Number(res.body.data.price)).toBe(10)
     expect(res.body.data.quantity).toBe(1)
   });
 

@@ -9,5 +9,4 @@ app.use(express.json());
 app.use("/health", healthRoutes);
 app.use("/api/products", productRoutes);
 
-
 export default app;

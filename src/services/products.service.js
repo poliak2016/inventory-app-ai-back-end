@@ -83,5 +83,9 @@ const result = await query (
   [id]
 )
 
-return result[0] || null
+if (result.rowCount === 0) {
+    throw new NotFoundError("Product not found");
+  }
+
+  return true;
 }
