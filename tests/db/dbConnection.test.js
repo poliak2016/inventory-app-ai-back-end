@@ -1,4 +1,3 @@
-import request from "supertest"
 import { query } from "../../src/db/query.js";
 
 describe("database connection", () => {

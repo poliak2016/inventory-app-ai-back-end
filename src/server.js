@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({quiet: true});
 
 import app from "./app.js";
 import config from "./config/config.js";
