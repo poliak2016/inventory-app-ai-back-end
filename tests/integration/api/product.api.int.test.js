@@ -1,8 +1,8 @@
 /* eslint-env jest */
 import request from "supertest";
-import app from "../../src/app.js";
+import app from "../../../src/app.js";
 
-describe("products API", () => {
+describe("products API (integration)", () => {
   let createdId;
 
   beforeAll(async () => {
@@ -14,8 +14,13 @@ describe("products API", () => {
     const res = await request(app)
       .post("/api/products")
       .send(newProduct);
-    createdId = res.body.data.id;
-    expect(createdId).toBeDefined()
+
+
+    createdId = res.body.data.id; 
+    expect(createdId).toBeDefined();
+
+    console.log("POST/api/products->", res.statusCode, res.body);
+
   });
 
   it("should return list of products", async () => {
@@ -34,7 +39,7 @@ describe("products API", () => {
 
   it("should update product data", async() => {
     const updateProductTest = {
-      "price": 10,
+      "price": "10.00",
       "quantity" : 1,
       "name": "UpdateTest"
     };
@@ -44,7 +49,7 @@ describe("products API", () => {
 
     expect(res.status).toBe(200)
     expect(res.body.data).toMatchObject(updateProductTest)
-    expect(res.body.data.price).toBe(10)
+    expect(Number(res.body.data.price)).toBe(10)
     expect(res.body.data.quantity).toBe(1)
   });
 

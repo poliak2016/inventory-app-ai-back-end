@@ -3,9 +3,7 @@ import prettier from "eslint-config-prettier";
 import n from "eslint-plugin-n";
 
 const commonGlobals = {
-  process: "readonly",
-  __dirname: "readonly",
-  require: "readonly",
+  process: "readonly"
 };
 
 export default [
@@ -31,7 +29,7 @@ export default [
   },
 
   {
-    files: ["**/*.test.js"],
+    files: ["tests/**/*.js"],
     languageOptions: {
       globals: {
         ...commonGlobals,
@@ -45,4 +43,12 @@ export default [
       },
     },
   },
+
+  {
+  files: ["eslint.config.js"],
+  rules: {
+    "n/no-extraneous-import": "off",
+  },
+},
+
 ];

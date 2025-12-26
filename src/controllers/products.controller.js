@@ -36,26 +36,26 @@ export const getProductById = asyncHandler(async (req, res) => {
 
 export const createNewProduct = asyncHandler(async(req, res) => {
   const {name, price, quantity} = req.body
-  if (name || price || quantity === null){
+  if (!name || price === null || quantity === null){
     throw new ValidationError("name, price, quantity are required")
   }
   const newProduct = await createProduct({name, price, quantity});
   res.status(201).json({
     status: "success",
     data: newProduct,
-  })
-})
+  });
+});
 
 export const updateProductData = asyncHandler(async (req, res) =>{
   const {id} = req.params
   if (!id) {
     throw new ValidationError ("Product ID is required")
   };
-  const updated = await updateProduct(id);
+  const updated = await updateProduct(id, req.body);
   if (!updated) {
     throw new NotFoundError ("Product")
   };
-  res.status(204).json({
+  res.status(200).json({
     status: "success",
     data: updated
 });
