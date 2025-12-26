@@ -1,4 +1,4 @@
-import { query } from "../../src/db/query.js";
+import { query } from "/src/db/query.js";
 
 describe("database connection", () => {
   it("should execute a simple query successfully", async () => {

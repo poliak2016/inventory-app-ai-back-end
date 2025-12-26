@@ -5,14 +5,14 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "dev": "cross-env NODE_ENV=development nodemon src/server.js",
+    "start": " src/server.js",
+    "test": "npm run migrate:test && cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
     "lint": "eslint .",
     "migrate:create": "node-pg-migrate create -m ./migrations",
-"migrate:up": "node-pg-migrate up -m ./migrations",
-"migrate:down": "node-pg-migrate down -m ./migrations"
-
+    "migrate:up": "node-pg-migrate up -m ./migrations",
+    "migrate:down": "node-pg-migrate down -m ./migrations",
+    "migrate:test": "dotenv -e .env.test -- node-pg-migrate up -m ./migrations"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -22,6 +22,8 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest": "^29.5.0",

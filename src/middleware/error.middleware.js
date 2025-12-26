@@ -1,5 +1,8 @@
 export const errorMiddleware = (err, req, res, next) => {
-  console.error("ERROR:",err);
+
+  if (res.headersSent) return next(err);
+  
+  console.error("ERROR:",err.message);
 
   const status = err.statusCode || 500;
 

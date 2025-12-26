@@ -1,6 +1,6 @@
-import pkg from "pg";
-const {Pool} = pkg;
-import config from "../config/config.js"
+import config from "../config/config.js";
+import {Pool} from "pg";
+
 
 export const pool = new Pool({
   host: config.db.host,

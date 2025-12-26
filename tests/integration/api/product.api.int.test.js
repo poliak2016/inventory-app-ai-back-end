@@ -1,8 +1,8 @@
 /* eslint-env jest */
 import request from "supertest";
-import app from "../../src/app.js";
+import app from "../../../src/app.js";
 
-describe("products API", () => {
+describe("products API (integration)", () => {
   let createdId;
 
   beforeAll(async () => {
@@ -14,8 +14,13 @@ describe("products API", () => {
     const res = await request(app)
       .post("/api/products")
       .send(newProduct);
-    createdId = res.body.data.id;
-    expect(createdId).toBeDefined()
+
+
+    createdId = res.body.data.id; 
+    expect(createdId).toBeDefined();
+
+    console.log("POST/api/products->", res.statusCode, res.body);
+
   });
 
   it("should return list of products", async () => {

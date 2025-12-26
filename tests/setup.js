@@ -1,5 +1,2 @@
-import {pool} from "../src/db/pool.js"
-
-afterAll (async() => {
-  await pool.end();
-});
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.test" });

@@ -2,11 +2,14 @@ import {query} from "../db/query.js"
 
 export const healthCheck = async(req, res) => {
 
-  await query(`SELECT NOW()`)
+  const result = await query(`SELECT NOW()`)
 
-  return result = res.status(200).json({ 
+  return res.status(200).json({ 
     status: "OK", 
     timestamp: new Date().toISOString() ,
-    db: "connected",
+    db: {
+      status: "connected",
+      now: result.rows[0].now
+    } 
   });
 };

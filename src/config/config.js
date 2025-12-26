@@ -1,14 +1,22 @@
-import dotenv from "dotenv";
+import dotenv from "dotenv"
+import path from"node:path"
 
-dotenv.config()
+dotenv.config({
+  path: process.env.NODE_ENV === "test" 
+  ? path.resolve(process.cwd(), ".env.test")
+  : path.resolve(process.cwd(), ".env") 
+});
 
-export default {
+if (!process.env.DB_PASSWORD) {
+  throw new Error("DB_PASSWORD is missing");
+}
+
+const config = {
   app: {
     name: process.env.APP_NAME || "InventoryAppAI",
     port: Number(process.env.APP_PORT) || 3000,
   },
 
- 
   db: {
     host: process.env.DB_HOST || "localhost",
     port: Number(process.env.DB_PORT) || 5432,
@@ -18,3 +26,4 @@ export default {
   }
 };
 
+export default config;
