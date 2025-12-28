@@ -1,4 +1,3 @@
-import { products } from "../data/products.sample.js";
 import {NotFoundError} from "../errors/NotFoundError.js";
 import { ValidationError } from "../errors/ValidationError.js";
 import {
