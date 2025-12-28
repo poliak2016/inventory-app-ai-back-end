@@ -8,6 +8,7 @@ pnpm-debug.log*
 # Environment
 .env
 .env.*
+.dockerignore
 
 # Logs
 logs/

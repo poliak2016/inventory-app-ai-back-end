@@ -25,5 +25,4 @@ const config = {
     database: process.env.DB_NAME || "inventory_app"
   }
 };
-
 export default config;

@@ -44,7 +44,7 @@ DATABASE_URL=postgres://postgres:your_password@localhost:5432/inventory_app_test
 `src/config/config.js` requires `DB_PASSWORD` or it throws on startup.
 
 ## Install
-```bash
+```
 npm install
 ```
 
@@ -63,7 +63,7 @@ Base migration creates `products` with `id`, `name`, `price`, `quantity`, `creat
 On start, `src/db/testDB.js` runs a simple `SELECT NOW()` to log DB connectivity.
 
 ## Tests
-```bash
+```
 npm test
 ```
 Runs test migrations then Jest + Supertest.
@@ -91,7 +91,7 @@ Success: `{ status: "success", data: ... }`. Errors flow through `errorMiddlewar
 - `tests/*` - API and integration tests
 
 ## Lint
-```bash
+```
 npm run lint
 ```
 
