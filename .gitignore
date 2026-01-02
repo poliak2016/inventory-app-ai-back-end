@@ -7,7 +7,8 @@ pnpm-debug.log*
 
 # Environment
 .env
-.env.*
+.env.production
+.env.test
 .dockerignore
 
 # Logs

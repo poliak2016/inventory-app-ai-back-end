@@ -1,17 +1,18 @@
 services:
   db:
     image: postgres:16
+    env_file:
+      - .env.production
     environment:
-      POSTGRES_DB: inventory_app
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: QWERTY
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${DB_PORT_HOST:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d inventory_app"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -19,16 +20,11 @@ services:
   api:
     build: .
     ports:
-      - "3000:3000"
-    env_file: 
-     - .env
+      - "${APP_PORT:-3000}:3000"
+    env_file:
+      - .env.production
     environment:
-      NODE_ENV: development
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: QWERTY
-      DB_NAME: inventory_app
+      NODE_ENV: production  
     depends_on:
       db:
         condition: service_healthy

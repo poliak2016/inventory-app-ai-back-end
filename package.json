@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon src/server.js",
-    "start": " src/server.js",
+    "start": "cross-env NODE_ENV=production node src/server.js",
     "test": "npm run migrate:test && cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
     "lint": "eslint .",
     "migrate:create": "node-pg-migrate create -m ./migrations",
@@ -17,6 +17,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "envalid": "^8.1.1",
     "express": "^5.2.1",
     "pg": "^8.16.3",
     "uuid": "^13.0.0"
