@@ -2,6 +2,9 @@
 import request from "supertest";
 import app from "../../../src/app.js";
 
+console.log("TEST DB_HOST:", process.env.DB_HOST);
+console.log("TEST DATABASE_URL:", process.env.DATABASE_URL);
+
 describe("products API (integration)", () => {
   let createdId;
 

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
 
+if (process.env.LOAD_DOTENV !== 'false') {
 const envFile =
   process.env.NODE_ENV === 'test'
     ? '.env.test'
@@ -8,6 +9,7 @@ const envFile =
       : '.env'
 
 dotenv.config({ path: envFile })
+};
 
 import { cleanEnv, str, num } from 'envalid'
 
@@ -23,6 +25,8 @@ export const env = cleanEnv(process.env, {
   DB_PORT: num({default: 5432}),
   DB_USER: str(),
   DB_PASSWORD: str(),
-  DB_NAME: str()
+  DB_NAME: str(),
+
+  DB_URL: str()
 
 });
