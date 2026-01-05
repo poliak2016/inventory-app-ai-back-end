@@ -1,24 +1,30 @@
-#1. Base image
-FROM node:20-alpine
-
-# 2. App directory inside container 
+# 1) Base
+FROM node:20-alpine AS base
 WORKDIR /app
-
-# 3. Copy dependency files first (for cache)
-
 COPY package*.json ./
 
-# 4. Install dependecies 
+# 2) Deps
+FROM base AS deps
+RUN npm ci
 
-RUN npm install 
-
-# 5.  Copy app source 
-
+# 3) Dev
+FROM deps AS dev
 COPY . .
-
-# 6. Expose API port 
 EXPOSE 3000
+CMD ["npm", "run", "dev:docker"]
 
-# 7. Start the app
+# 4) Prod 
+FROM base AS prod
+ENV NODE_ENV=production
+RUN npm ci --omit=dev
+COPY . .
+EXPOSE 3000
+USER node
+CMD ["npm", "run", "start"]
 
-CMD ["npm", "run", "dev"]
+# 5) Test 
+FROM deps AS test
+ENV NODE_ENV=test
+COPY . .
+USER node
+CMD ["npm", "run", "test:docker"]

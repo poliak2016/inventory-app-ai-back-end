@@ -21,12 +21,12 @@ export const env = cleanEnv(process.env, {
   
   APP_PORT: num({default: 3000}),
 
-  DB_HOST: str(),
-  DB_PORT: num({default: 5432}),
-  DB_USER: str(),
-  DB_PASSWORD: str(),
-  DB_NAME: str(),
+  POSTGRES_HOST: str(),
+  POSTGRES_PORT: num({default: 5432}),
+  POSTGRES_USER: str(),
+  POSTGRES_PASSWORD: str(),
+  POSTGRES_NAME: str(),
 
-  DB_URL: str()
+  DATABASE_URL: str()
 
 });

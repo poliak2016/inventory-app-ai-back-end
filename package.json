@@ -3,18 +3,25 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development nodemon src/server.js",
-    "start": "cross-env NODE_ENV=production node src/server.js",
-    "test": "npm run migrate:test && dotenv -e .env.test.base -e .env.test.local -- cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
+    "dev": "dotenv -e .env -env NODE_ENV=development nodemon src/server.js",
+    "dev:docker": "nodemon --legacy-watch src/server.js",
+    "start": "node src/server.js",
+
+    "test": "npm run migrate:test && dotenv -e .env.test -- cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
     "test:docker": "npm run migrate:test:docker && cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
+
     "lint": "eslint .",
+
     "migrate:create": "node-pg-migrate create -m ./migrations",
     "migrate:up": "node-pg-migrate up -m ./migrations",
     "migrate:down": "node-pg-migrate down -m ./migrations",
     "migrate:test": "dotenv -e .env.test -- node-pg-migrate up -m ./migrations",
-    "migrate:test:docker": "node-pg-migrate up -m ./migrations"
+    "migrate:test:docker": "node-pg-migrate up -m ./migrations",
+
+     "docker:test": "docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from api",
+     "docker:test:down": "docker compose -f docker-compose.test.yml down -v"
   },
   "dependencies": {
     "cors": "^2.8.5",

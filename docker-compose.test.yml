@@ -2,20 +2,28 @@ services:
   db_test:
     image: postgres:16
     env_file:
-      - .env.test.docker
+      - .env.test
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 20
 
   api:
-    build: .
+    build: 
+      context: .
+      target: test
     command: npm run test:docker
     env_file:
-      - .env.test.docker
+      - .env.test
     environment:
       NODE_ENV: test
+      DB_HOST: db_test
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db_test:${DB_PORT}/${DB_NAME}
       LOAD_DOTENV: "false"
     depends_on:
       db_test:

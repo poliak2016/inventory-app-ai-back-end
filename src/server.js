@@ -6,6 +6,5 @@ import { testDB } from "./db/testDB.js";
 app.listen(env.APP_PORT, () => {
   console.log(`Server is running on port ${env.APP_PORT}`);
 });
-
-
+// console.log("hi")
 testDB()
