@@ -5,8 +5,8 @@ const envFile =
   process.env.NODE_ENV === 'test'
     ? '.env.test'
     : process.env.NODE_ENV === 'production'
-      ? '.env.production'
-      : '.env'
+      ? '.env.prod'
+      : '.env.dev'
 
 dotenv.config({ path: envFile })
 };
@@ -21,11 +21,11 @@ export const env = cleanEnv(process.env, {
   
   APP_PORT: num({default: 3000}),
 
-  POSTGRES_HOST: str(),
-  POSTGRES_PORT: num({default: 5432}),
-  POSTGRES_USER: str(),
-  POSTGRES_PASSWORD: str(),
-  POSTGRES_NAME: str(),
+  DB_HOST: str(),
+  DB_PORT: num({default: 5432}),
+  DB_USER: str(),
+  DB_PASSWORD: str(),
+  DB_NAME: str(),
 
   DATABASE_URL: str()
 

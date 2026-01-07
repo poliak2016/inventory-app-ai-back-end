@@ -13,7 +13,7 @@ Express + PostgreSQL service for inventory: health-check and CRUD for products.
 - PostgreSQL 14+ (local or Docker)
 
 ## Environment
-Create `.env` for development, `.env.test` for tests, and `.env.production` for production. Docker compose reuses these same files and overrides only the host names for its internal networks. Never commit real `.env`; commit `.env.example` with placeholders.
+Create `.env.dev` for development, `.env.test` for tests, and `.env.prod` for production. Docker compose reuses these same files and overrides only the host names for its internal networks. Never commit real `.env`; commit `.env.example` with placeholders.
 
 Example `.env.example`:
 ```env
@@ -42,7 +42,7 @@ DB_NAME=inventory_app_test
 DATABASE_URL=postgres://postgres:your_password@localhost:5432/inventory_app_test
 ```
 
-Production example (`.env.production`, keep secrets out of git):
+Production example (`.env.prod`, keep secrets out of git):
 ```env
 NODE_ENV=production
 APP_PORT=3000
@@ -54,7 +54,7 @@ DB_NAME=inventory_app
 DATABASE_URL=postgres://postgres:your_password@localhost:5432/inventory_app
 ```
 
-`src/config/config.js` requires `DB_PASSWORD` or it throws on startup.
+`src/config/env.js` validates required DB_* values (including `DB_PASSWORD`) on startup.
 
 ## Install
 ```

@@ -43,3 +43,4 @@ coverage/
 
 # OS
 $RECYCLE.BIN/
+.claude/settings.local.json

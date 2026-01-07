@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:16
     env_file:
-      - .env.production
+      - .env.prod
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -22,7 +22,7 @@ services:
     ports:
       - "${APP_PORT:-3000}:3000"
     env_file:
-      - .env.production
+      - .env.prod
     environment:
       NODE_ENV: production
       DB_HOST: db
