@@ -5,11 +5,11 @@ services:
       - .env.test
       - .env.docker
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-inventory_app_test}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-QWERTY}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-inventory_app_test}"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -25,7 +25,7 @@ services:
     environment:
       NODE_ENV: test
       DB_HOST: db_test
-      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db_test:${DB_PORT}/${DB_NAME}
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:QWERTY@db_test:5432/inventory_app_test}
       LOAD_DOTENV: "false"
     depends_on:
       db_test:
