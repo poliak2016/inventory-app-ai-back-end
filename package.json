@@ -6,7 +6,7 @@
     "express": "^5.2.1",
     "pg": "^8.16.3",
     "uuid": "^13.0.0",
-    "winston": "^3.19.0"
+    "winston": "^3.9.0"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
@@ -48,8 +48,11 @@
     "migrate:create": "node-pg-migrate create -m ./migrations",
     "migrate:down": "node-pg-migrate down -m ./migrations",
     "migrate:test": "dotenv -e .env.test -- node-pg-migrate up -m ./migrations",
+     "migrate:up:dev": "dotenv -e .env.dev -- node-pg-migrate up -m ./migrations",
     "migrate:test:docker": "node-pg-migrate up -m ./migrations",
     "migrate:up": "node-pg-migrate up -m ./migrations",
+    "migrate:up:docker": "node-pg-migrate up -m ./migrations",
+    "migrate:down:docker": "node-pg-migrate down -m ./migrations",
     "start": "node src/server.js",
     "test": "npm run migrate:test && dotenv -e .env.test -- cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
     "test:docker": "npm run migrate:test:docker && cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles"
@@ -57,3 +60,4 @@
   "type": "module",
   "version": "1.0.0"
 }
+

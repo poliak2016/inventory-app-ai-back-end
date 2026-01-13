@@ -1,6 +1,7 @@
 /* eslint-env jest */
 import request from "supertest";
 import app from "../../../src/app.js";
+import { logger } from "../../../src/config/logger.js";
 
 describe("products API (integration)", () => {
   let createdId;
@@ -19,7 +20,7 @@ describe("products API (integration)", () => {
     createdId = res.body.data.id; 
     expect(createdId).toBeDefined();
 
-    console.log("POST/api/products->", res.statusCode, res.body);
+    logger.info("POST/api/products->", res.statusCode, res.body);
 
   });
 

@@ -20,6 +20,11 @@ export const env = cleanEnv(process.env, {
   }),
   
   APP_PORT: num({default: 3000}),
+  
+  LOG_LEVEL: str({
+    default: "info",
+    choices: ["error", "warn", "info", "debug"]
+  }),
 
   DB_HOST: str(),
   DB_PORT: num({default: 5432}),
