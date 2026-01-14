@@ -1,0 +1,32 @@
+services:
+  db_test:
+    image: postgres:16
+    env_file:
+      - .env.test
+      - .env.docker
+    environment:
+      POSTGRES_DB: ${DB_NAME:-inventory_app_test}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-QWERTY}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-inventory_app_test}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: 
+      context: .
+      target: test
+    command: npm run test:docker
+    env_file:
+      - .env.test
+      - .env.docker
+    environment:
+      NODE_ENV: test
+      DB_HOST: db_test
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:QWERTY@db_test:5432/inventory_app_test}
+      LOAD_DOTENV: "false"
+    depends_on:
+      db_test:
+        condition: service_healthy

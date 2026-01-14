@@ -6,8 +6,9 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Environment
-.env
-.env.*
+.env*
+
+
 
 # Logs
 logs/
@@ -30,7 +31,7 @@ Thumbs.db
 
 # Testing
 coverage/
-.jest/
+
 
 # Temporary
 .tmp
@@ -42,3 +43,4 @@ coverage/
 
 # OS
 $RECYCLE.BIN/
+.claude/settings.local.json

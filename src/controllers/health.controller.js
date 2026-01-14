@@ -1,6 +1,7 @@
 import {query} from "../db/query.js" 
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
-export const healthCheck = async(req, res) => {
+export const healthCheck = asyncHandler(async(req, res) => {
 
   const result = await query(`SELECT NOW()`)
 
@@ -12,4 +13,4 @@ export const healthCheck = async(req, res) => {
       now: result.rows[0].now
     } 
   });
-};
+});
