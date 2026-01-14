@@ -1,5 +1,5 @@
 import {query} from "../db/query.js" 
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 export const healthCheck = asyncHandler(async(req, res) => {
 

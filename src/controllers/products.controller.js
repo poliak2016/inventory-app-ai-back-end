@@ -7,7 +7,7 @@ import {
    updateProduct,
    deleteProduct
   } from "../services/products.service.js";
-import {asyncHandler} from "../utils/asyncHandler.js";
+import {asyncHandler} from "../middleware/asyncHandler.js";
 
 
 export const getProducts = asyncHandler (async (req, res) => {
