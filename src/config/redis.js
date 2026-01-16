@@ -2,13 +2,31 @@ import {env} from "./env.js"
 import {createClient} from "redis"
 import {logger} from "./logger.js"
 
-export const redis = createClient({
-  url: env.REDIS_URL
-});
 
-logger.info("Redis is alive")
+let redis = null;
 
-redis.on("error", (err) => {
-  logger.error(`Redis error: ${err.message}`
-  )
-});
+export const initRedis = async () => {
+
+  if(!env.REDIS_ENABLE) {
+    logger.info("Redis disabled")
+    return null
+  }
+
+
+try{
+  redis = createClient({url: env.REDIS_URL});
+
+  redis.on("error", (err) => {
+    logger.error(`Redis error ${err}`)
+   });
+
+  await redis.connect();
+   logger.info("Redis connected")
+   return redis
+} catch (err){
+  logger.error(`Redis connection failed, continuing without cache, ${err}`);
+  return null
+}
+};
+
+export const getRedis = () => redis;

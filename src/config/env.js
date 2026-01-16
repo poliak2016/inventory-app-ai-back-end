@@ -11,7 +11,7 @@ const envFile =
 dotenv.config({ path: envFile })
 };
 
-import { cleanEnv, str, num } from 'envalid'
+import { cleanEnv, str, num, bool } from 'envalid'
 
 export const env = cleanEnv(process.env, {
   NODE_ENV: str({
@@ -33,5 +33,7 @@ export const env = cleanEnv(process.env, {
   DB_NAME: str(),
 
   DATABASE_URL: str(),
-  REDIS_URL: str()
+
+  REDIS_URL: str({default:""}),
+  REDIS_ENABLE: bool({default: false})
 });

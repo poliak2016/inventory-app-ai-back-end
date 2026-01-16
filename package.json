@@ -37,7 +37,7 @@
   "name": "inventory-app-ai-backend",
   "private": true,
   "scripts": {
-    "dev": "dotenv -e .env.dev -- cross-env NODE_ENV=development nodemon src/server.js",
+    "dev": "dotenv -e .env.dev -- cross-env NODE_ENV=development nodemon --legacy-watch src/server.js",
     "dev:docker": "nodemon --legacy-watch src/server.js",
     "docker:dev": "docker compose -f docker-compose.dev.yml up --build",
     "docker:dev:down": "docker compose -f docker-compose.dev.yml down -v",
