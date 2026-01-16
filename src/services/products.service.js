@@ -2,14 +2,21 @@ import { v4 as uuid } from "uuid";
 import {query} from "../db/query.js";
 import { ValidationError } from "../errors/ValidationError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
+import { redis } from "../config/redis.js";
   
 export const getAll = async () => {
+   const cacheKey = 'products:all';
+   const cached = await redis.get(cacheKey);
+   if (cached) return JSON.parse(cached);
+
    const result = await  query(`
     SELECT * 
     FROM products 
     ORDER BY created_at DESC
     `);
-return result.rows;
+
+   await redis.set(cacheKey, JSON.stringify(result.rows));
+   return result.rows;
 };
 
 export const getProductId = async (id) => {
