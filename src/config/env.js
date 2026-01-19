@@ -35,5 +35,7 @@ export const env = cleanEnv(process.env, {
   DATABASE_URL: str(),
 
   REDIS_URL: str({default:""}),
-  REDIS_ENABLE: bool({default: false})
+  REDIS_ENABLE: bool({}),
+  RATE_LIMIT_WINDOW_SEC: num(),
+  RATE_LIMIT_MAX: num()
 });

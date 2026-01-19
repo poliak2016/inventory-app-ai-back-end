@@ -11,6 +11,6 @@ app.use(requestLogger)
 app.use("/health", healthRoutes);
 app.use("/api/products", productRoutes);
 app.use(errorMiddleware)
-
+   
 
 export default app;
