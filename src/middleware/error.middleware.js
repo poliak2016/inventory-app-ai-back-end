@@ -5,7 +5,13 @@ export const errorMiddleware = (err, req, res, next) => {
 
   if (res.headersSent) return next(err);
 
-  logger.error("ERROR:", err.message);
+    logger.error("Request error", {
+    message: err.message,
+    status,
+    stack: err.stack,
+    path: req.originalUrl,
+    method: req.method,
+  });
 
   res.status(status).json({
     status: "error",

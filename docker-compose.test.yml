@@ -21,7 +21,7 @@ services:
     command: npm run test:docker
     env_file:
       - .env.test
-      - .env.docker
+      - .env.docker.test
     environment:
       NODE_ENV: test
       DB_HOST: db_test
