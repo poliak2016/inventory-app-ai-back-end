@@ -1,5 +1,6 @@
 import {query} from "../db/query.js" 
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { initRedis } from "../config/redis.js";
 
 export const healthCheck = asyncHandler(async(req, res) => {
 
@@ -11,6 +12,7 @@ export const healthCheck = asyncHandler(async(req, res) => {
     db: {
       status: "connected",
       now: result.rows[0].now
-    } 
+    },
+    redis:  initRedis()
   });
 });

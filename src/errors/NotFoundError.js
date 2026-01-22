@@ -1,7 +1,7 @@
 import {BaseError} from './base.error.js';
 
 export class NotFoundError extends BaseError {
-  constructor(resource = "Resource") {
+  constructor(resource = "Product") {
     super(`${resource} not found`, 404);
   }
 }

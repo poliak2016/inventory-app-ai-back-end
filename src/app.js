@@ -7,10 +7,11 @@ import { requestLogger } from "./middleware/requestLogger.middleware.js";
 const app = express();
 
 app.use(express.json());
-app.use(requestLogger)
+app.use(requestLogger);
+
 app.use("/health", healthRoutes);
 app.use("/api/products", productRoutes);
-app.use(errorMiddleware)
+app.use(errorMiddleware);
    
 
 export default app;

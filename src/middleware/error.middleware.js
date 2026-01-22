@@ -1,17 +1,26 @@
 import { logger } from "../config/logger.js";
 
 export const errorMiddleware = (err, req, res, next) => {
-  const status = err.status || err.statusCode || 500;
+  
+  const status = err.statusCode || err.status || 500;
 
   if (res.headersSent) return next(err);
 
-    logger.error("Request error", {
+  const logPayLoad = {
     message: err.message,
     status,
-    stack: err.stack,
     path: req.originalUrl,
-    method: req.method,
-  });
+    method: req.method
+  }
+
+  if(status >= 500){
+    logger.error("Internal server error",{
+      ...logPayLoad,
+      stack: err.stack
+    })
+  } else {
+      logger.warn("Client error:", logPayLoad)
+    }
 
   res.status(status).json({
     status: "error",
