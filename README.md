@@ -2,6 +2,15 @@
 
 Simple Express + PostgreSQL backend providing a health check and CRUD for products, with integrated Winston logging.
 
+Includes:
+- Express 5 API with modular structure
+- PostgreSQL with migration scripts (node-pg-migrate)
+- Redis caching and rate limiting
+- Zod validation and custom error handling
+- Winston logging (console and file)
+- Docker Compose for dev, test, and production
+- Full Jest test suite (unit & integration)
+
 ## Requirements
 - Node >=20
 - npm >=9
@@ -15,10 +24,24 @@ Simple Express + PostgreSQL backend providing a health check and CRUD for produc
 3. Run migrations: `npm run migrate:up:dev`
 4. Start server: `npm run dev`
 
+#### Scripts
+- `npm run dev` — Start local dev server with hot reload
+- `npm test` — Run all tests (Jest)
+- `npm run lint` — Lint codebase
+- `npm run migrate:up:dev` — Run DB migrations for dev
+- See `package.json` for all available scripts
+
+
 ### Docker
-- Dev: `npm run docker:dev`
-- Prod: `npm run docker:prod`
-- Tests: `npm run docker:test`
+- Dev: `npm run docker:dev` (uses docker-compose.yml + docker-compose.dev.yml)
+- Prod: `npm run docker:prod` (uses docker-compose.yml)
+- Tests: `npm run docker:test` (uses docker-compose.test.yml)
+
+#### Production Docker Compose
+- Use `docker-compose.prod.yml` at the project root for production deployments (API, PostgreSQL, Redis, health checks, persistent volumes).
+- Run from project root:
+  - `docker compose -f docker-compose.prod.yml up --build`
+  - See the file for details on environment variables and service configuration.
 
 ## Database Migrations
 
@@ -42,8 +65,8 @@ Simple Express + PostgreSQL backend providing a health check and CRUD for produc
 The application uses **Winston** for structured logging with the following features:
 
 - **Console output:** Colored, human-readable in development; JSON format in production
-- **File transports:** Logs written to `logs/combined.log` and `logs/errors.log` with rotation (5 MB max per file, 5 files retained)
-- **Exception & rejection handlers:** Separate logs for uncaught exceptions and unhandled promise rejections
+- **File transports:** (optional, see logger config)
+- **Exception & rejection handlers:** (optional, see logger config)
 - **Environment configuration:** Set `LOG_LEVEL` in `.env` (default: `info`; choices: `error`, `warn`, `info`, `debug`)
 - **Request logging:** Automatic logging of HTTP requests via middleware
 - **Test logging:** Log level set to `error` during tests for cleaner output
@@ -62,12 +85,22 @@ logger.debug('Debug message', { metadata: 'value' });
 ## API Endpoints
 
 - **Health:** `GET /health`
+- Returns DB and Redis status, timestamp
 - **Products** (prefix `/api/products`):
   - `GET /` — list all products
   - `GET /:id` — get product by ID
   - `POST /` — create product
   - `PUT /:id` — update product
   - `DELETE /:id` — delete product
+
+## Features
+
+- **Validation:** All input validated with Zod schemas
+- **Error Handling:** Centralized error middleware, custom error classes, request ID in all error responses
+- **Caching:** Product data cached in Redis (if enabled)
+- **Rate Limiting:** Per-IP rate limiting using Redis (configurable via env)
+- **Request ID:** All requests assigned a unique ID (header: `x-request-id`)
+- **Testing:** Jest for unit/integration tests, with DB and API coverage
 
 ## Project Structure
 
@@ -78,7 +111,8 @@ src/
 ├── config/                    # Configuration files
 │   ├── env.js                 # Environment variables (envalid)
 │   ├── logger.js              # Winston logger config
-│   └── config.js              # Additional config
+│   ├── redis.js               # Redis client/config
+│   └── config.js              # Additional config (if any)
 ├── controllers/               # Request handlers
 ├── services/                  # Business logic
 ├── routes/                    # Route definitions
@@ -103,12 +137,11 @@ NODE_ENV=development
 APP_PORT=3000
 LOG_LEVEL=info
 
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=password
-DB_NAME=inventory
 DATABASE_URL=postgres://user:password@localhost:5432/inventory
+REDIS_URL=redis://localhost:6379
+REDIS_ENABLE=true
+RATE_LIMIT_WINDOW_SEC=60
+RATE_LIMIT_MAX=100
 ```
 
 ## Security / Secrets
@@ -117,3 +150,7 @@ DATABASE_URL=postgres://user:password@localhost:5432/inventory
 - Use `.env.example` as a template for environment variables
 - Ensure `uuid-ossp` extension is available (migration creates it if missing)
 - Rotate secrets regularly in production
+
+## Contributing
+
+PRs and issues welcome! Please lint and test before submitting.
