@@ -1,6 +1,17 @@
 name: inventory-dev
 
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
   db:
     image: postgres:16
     env_file:
@@ -25,10 +36,14 @@ services:
     env_file:
       - .env.dev
       - .env.docker
+    environment:
+      REDIS_URL: redis://redis:6379
     ports:
       - "${APP_PORT:-3000}:3000"
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: npm run dev:docker
     volumes:
