@@ -9,8 +9,8 @@ import {
   } from "../services/products.service.js";
 import {asyncHandler} from "../middleware/asyncHandler.js";
 
-
 export const getProducts = asyncHandler (async (req, res) => {
+ 
  const products = await getAll();
  res.status(200).json({
     status: "success",
@@ -24,9 +24,9 @@ export const getProductById = asyncHandler(async (req, res) => {
     throw new ValidationError("Product ID is required")
   }
   const product = await getProductId(id);
-  if (!product){
-    throw new NotFoundError("Product not found")
-  }
+  if(!product){
+    throw new NotFoundError()
+ }
   res.status(200).json({
     status: "success",
     data: product

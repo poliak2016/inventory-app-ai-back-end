@@ -1,32 +1,31 @@
-export async function rateLimitCounter({
+export async function rateLimitCounter ({
   redis,
-  key,
+  key, 
   windowSec,
-  max,
+  max
 }) {
-  try {
-    const count = await redis.incr(key);
+try{
+  const count = redis.incr(key);
 
-    if (count === 1) {
-      await redis.expire(key, windowSec);
-    }
+  if(count === 1){
+    await redis.expire(key, windowSec)
+  }
 
-    if (count > max) {
-      return {
-        allowed: false,
-        count,
-      };
-    }
-
+  if (count > max){
     return {
-      allowed: true,
-      count,
-    };
-  } catch (err) {
-    return {
-      allowed: true,
-      degraded: true,
-      error: err.message,
+      allowed: false,
+      count
+  }};
+
+  return{
+    allowed: true,
+    count
+  }; 
+
+} catch {
+  return {
+  allowed: true,
+  degraded: true
     };
   }
 }
