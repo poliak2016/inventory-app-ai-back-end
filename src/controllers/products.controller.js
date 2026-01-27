@@ -9,8 +9,8 @@ import {
   } from "../services/products.service.js";
 import {asyncHandler} from "../middleware/asyncHandler.js";
 
-
 export const getProducts = asyncHandler (async (req, res) => {
+ 
  const products = await getAll();
  res.status(200).json({
     status: "success",

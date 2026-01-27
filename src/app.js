@@ -3,10 +3,12 @@ import healthRoutes from "./routes/health.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import { errorMiddleware } from "./middleware/error.middleware.js"; 
 import { requestLogger } from "./middleware/requestLogger.middleware.js";
+import { requestId } from "./middleware/requestIdMiddleware.js";
 
 const app = express();
-
 app.use(express.json());
+
+app.use(requestId)
 app.use(requestLogger);
 
 app.use("/health", healthRoutes);

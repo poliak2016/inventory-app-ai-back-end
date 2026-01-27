@@ -1,14 +1,11 @@
 export const shorthands = undefined;
 
 export const up = (pgm) => {
-  
-  pgm.createExtension("pgcrypto", { ifNotExists: true });
-
   pgm.createTable("users", {
     id: {
       type: "uuid",
       primaryKey: true,
-      default: pgm.func("gen_random_uuid()"),
+      default: pgm.func("uuid_generate_v4()"),
     },
     name: {
       type: "text",
@@ -40,5 +37,4 @@ export const up = (pgm) => {
 
 export const down = (pgm) => {
   pgm.dropTable("users", { ifExists: true });
-  // (опційно) extension не видаляють, бо може бути потрібен іншим таблицям
 };

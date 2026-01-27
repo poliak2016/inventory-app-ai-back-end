@@ -7,7 +7,6 @@ import { getRedis } from "../config/redis.js";
 let redis = getRedis()
 
 export const getAll = async () => {
-  
    const cacheKey = 'products:all';
    const cached = await redis.get(cacheKey);
    if (cached) return JSON.parse(cached);

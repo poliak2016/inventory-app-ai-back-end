@@ -3,7 +3,6 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
 import { initRedis } from "../config/redis.js";
 
 export const healthCheck = asyncHandler(async(req, res) => {
-
   const result = await query(`SELECT NOW()`)
 
   return res.status(200).json({ 
