@@ -11,11 +11,11 @@ const envFile =
 dotenv.config({ path: envFile })
 };
 
-import { cleanEnv, str, num } from 'envalid'
+import { cleanEnv, str, num, bool } from 'envalid'
 
 export const env = cleanEnv(process.env, {
   NODE_ENV: str({
-    choices: ['development', 'production', 'test'],
+    choices: ['development', 'production', 'test', 'docker', 'docker-test'],
     default: 'development'
   }),
   
@@ -32,6 +32,11 @@ export const env = cleanEnv(process.env, {
   DB_PASSWORD: str(),
   DB_NAME: str(),
 
-  DATABASE_URL: str()
+  DATABASE_URL: str(),
+
+  REDIS_URL: str({default: ""}),
+  REDIS_ENABLE: bool({default: false}),
+  RATE_LIMIT_WINDOW_SEC: num({default: 60}),
+  RATE_LIMIT_MAX: num({default: 100})
 
 });

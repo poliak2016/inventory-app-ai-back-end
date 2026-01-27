@@ -1,4 +1,12 @@
 services:
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   db:
     image: postgres:16
     env_file:
@@ -27,8 +35,11 @@ services:
       NODE_ENV: production
       DB_HOST: db
       DATABASE_URL: postgres://${DB_USER:-postgres}:${DB_PASSWORD:-}@db:${DB_PORT:-5432}/${DB_NAME:-inventory_app}
+      REDIS_URL: redis://redis:6379
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: 
       npm run start
