@@ -22,10 +22,11 @@ export async function rateLimitCounter({
       allowed: true,
       count,
     };
-  } catch {
+  } catch (err) {
     return {
       allowed: true,
       degraded: true,
+      error: err.message,
     };
   }
 }

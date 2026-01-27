@@ -4,11 +4,13 @@ import { logger } from "./logger.js";
 
 let redisClient = null;
 
+// Noop Redis client for when Redis is disabled or unavailable
+// Always allows requests to ensure application continues functioning
 const noopRedis = {
   get: async () => null,
   set: async () => "OK",
   del: async () => 0,
-  incr: async () => 1,
+  incr: async () => 0, // Return 0 to always allow requests in degraded mode
   expire: async () => true,
 };
 
