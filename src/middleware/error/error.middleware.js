@@ -1,4 +1,4 @@
-import { logger } from "../config/logger.js";
+import { logger } from "../../config/logger.js";
 import{ZodError} from "zod";
 
 export const errorMiddleware = (err, req, res, next) => {
