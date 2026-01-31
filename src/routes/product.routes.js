@@ -7,9 +7,7 @@ import {
   deleteProductData,
 } from "../controllers/products.controller.js";
 import { validate } from "../middleware/validation/validate.middleware.js";
-import { createProductSchema } from "../schemas/product.schema.js";
-import { validateIdSchema } from "../schemas/product.schema.js";
-import { updateProductSchema } from "../schemas/product.schema.js";
+import { createProductSchema,  updateProductSchema, validateIdSchema } from "../schemas/product.schema.js";
 
 const router = Router();
 

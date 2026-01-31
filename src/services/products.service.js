@@ -1,7 +1,6 @@
 import { v4 as uuid } from "uuid";
 import {query} from "../db/query.js";
-import { ValidationError } from "../errors/ValidationError.js";
-import { NotFoundError } from "../errors/NotFoundError.js";
+import { ValidationError, NotFoundError } from "../errors/products/productErrors.js";
 import { getRedis } from "../config/redis.js";
   
 let redis = getRedis()
