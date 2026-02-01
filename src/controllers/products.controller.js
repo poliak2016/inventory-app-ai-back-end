@@ -1,5 +1,4 @@
-import {NotFoundError} from "../errors/NotFoundError.js";
-import { ValidationError } from "../errors/ValidationError.js";
+import { NotFoundError, ValidationError } from "../errors/products/productErrors.js";
 import {
    getAll,
    getProductId,

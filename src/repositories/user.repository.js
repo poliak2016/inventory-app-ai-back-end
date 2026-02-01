@@ -1,5 +1,5 @@
-import { query } from "../db/query"
-import { qFindById, qCreate, qFindByEmail } from "../model/user.model"
+import { query } from "../db/query.js"
+import { qFindById, qCreate, qFindByEmail } from "../model/user.model.js"
 
 export const userRepository = {
 // Find user by id
@@ -13,8 +13,8 @@ export const userRepository = {
     return rows[0] ?? null
   },
 // Create user 
-  async createUser({email, passwordHash, role}) {
-    const {rows} = await query(qCreate, [email, passwordHash, role])
+  async createUser({name, email, passwordHash, role}) {
+    const {rows} = await query(qCreate, [name, email, passwordHash, role])
     return rows[0] ?? null
   }
 }

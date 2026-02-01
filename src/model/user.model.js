@@ -7,7 +7,7 @@ export const USER_COLUMNS = `
   email,
   role,
   created_at AS "createdAt",
-  updated_at AS "updatedAt"
+  update_at AS "updateAt"
 `;
 
 export const USER_PRIVATE_COLUMNS = `
@@ -30,7 +30,7 @@ export const qFindByEmail = `
 `;
 
 export const qCreate = `
-  INSERT INTO ${USER_TABLE} (email, password_hash, role)
-  VALUES ($1, $2, $3)
+  INSERT INTO ${USER_TABLE} (name, email, password_hash, role)
+  VALUES ($1, $2, $3, $4)
   RETURNING ${USER_COLUMNS}
 `;

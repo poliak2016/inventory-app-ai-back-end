@@ -1,4 +1,4 @@
-name: docker-compose.dev.yml
+
 
 services:
   redis:
@@ -16,7 +16,8 @@ services:
     image: postgres:16
     env_file:
       - .env.docker
-
+    ports:
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,6 +31,7 @@ services:
     build: .
     command: npm run migrate:up
     env_file:
+      - .env.dev
       - .env.docker
     depends_on:
       db:

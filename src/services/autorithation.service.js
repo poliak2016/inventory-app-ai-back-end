@@ -1,12 +1,12 @@
-import {bcrypt} from "bcrypt"
-import { userRepository } from "../repositories/user.repository";
-import { AuthError, ConflictError } from "../errors/autorithation/auth";
+import bcrypt from "bcrypt"
+import { userRepository } from "../repositories/user.repository.js";
+import { AuthError, ConflictError } from "../errors/autorithation/auth.js";
 
 
-export const registrUser = async({email, password}) =>{
+export const registrUser = async({name, email, password}) =>{
 
-    if (!email || !password){
-    throw new AuthError("email/password are required")
+    if (!name || !email || !password){
+    throw new AuthError("name/email/password are required")
   };
 
   const existingUser = await userRepository.findByEmail(email);
@@ -14,9 +14,10 @@ export const registrUser = async({email, password}) =>{
     throw new ConflictError("User already exist")
   };
 
-  const passwordHash = await bcrypt(password, 8)
+  const passwordHash = await bcrypt.hash(password, 8)
 
   const newUser = await userRepository.createUser({
+    name,
     email, 
     passwordHash,
     role: "user"
