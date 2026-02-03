@@ -5,10 +5,13 @@ export const validate = (schema, source = "body") => {
     const data = req[source];
     const result = schema.safeParse(data);
 
-    if (!result.success) {
-      return next(new ValidationError(`Invalid request ${source}`, result.error));
+   if (!result.success) {
+      return next(
+        new ValidationError(`Invalid request ${source}`, {
+          issues: result.error.issues,
+        })
+      );
     }
-
     req[source] = result.data;
     return next();
   };

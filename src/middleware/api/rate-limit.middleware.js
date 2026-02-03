@@ -34,7 +34,7 @@ export const rateLimitMiddleware = async (req, res, next) => {
     logger.error("Rate limiting middleware error", { 
       error: err.message 
     });
-    // Allow request on error to prevent service disruption
+    
     next();
   }
 };

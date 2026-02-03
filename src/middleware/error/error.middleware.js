@@ -1,44 +1,87 @@
 import { logger } from "../../config/logger.js";
-import{ZodError} from "zod";
+import { ZodError } from "zod";
+
+const sanitizeBody = (body) => {
+  if (!body || typeof body !== "object") return body;
+
+  const sanitized = { ...body };
+
+  if ("password" in sanitized) sanitized.password = "[REDACTED]";
+  if ("passwordHash" in sanitized) sanitized.passwordHash = "[REDACTED]";
+  if ("refreshToken" in sanitized) sanitized.refreshToken = "[REDACTED]";
+
+  return sanitized;
+};
 
 export const errorMiddleware = (err, req, res, next) => {
   if (res.headersSent) return next(err);
 
-  if(err instanceof ZodError){
-    res.status(400).json({
-      status: "error",
-      message: "Validation error",
-      issues: err.issues.map((i) => ({
-      path: i.path.join("."),
-      message: i.message
-      }))
-    })
-  }
-  
-  const status = err.statusCode || err.status || 500;
+  const requestId = req.requestId;
 
-  const logPayload = {
-    requestId: req.requestId,
-    message: err.message,
-    status,
+
+  const requestContext = {
+    requestId,
     path: req.originalUrl,
     method: req.method,
+    params: req.params,
+    query: req.query,
+    body: sanitizeBody(req.body),
+  };
+
+
+  if (err instanceof ZodError) {
+    const issues = err.issues.map((issue) => ({
+      path: issue.path.join("."),
+      message: issue.message,
+      code: issue.code,
+    }));
+
+    logger.warn("Validation failed", {
+      ...requestContext,
+      status: 400,
+      issues,
+    });
+
+    return res.status(400).json({
+      status: "error",
+      message: "Validation error",
+      requestId,
+      issues,
+    });
+  }
+
+
+  const status = err.statusCode || err.status || 500;
+
+  const errorContext = {
+    ...requestContext,
+    status,
+    name: err.name,
+    message: err.message,
+    details: err.details,
+    stack: status >= 500 ? err.stack : undefined,
   };
 
 
   if (status >= 500) {
-    logger.error("Request failed", { ...logPayload, stack: err.stack });
+    logger.error("Request failed", errorContext);
+
     return res.status(status).json({
       status: "error",
       message: "Internal server error",
-      requestId: req.requestId,
+      requestId,
     });
   }
 
-  logger.warn("Request failed", logPayload);
+
+  logger.warn("Request failed", errorContext);
+
   return res.status(status).json({
     status: "error",
     message: err.message,
-    requestId: req.requestId,
+    requestId,
+    ...(process.env.NODE_ENV === "development" && err.details
+      ? { details: err.details }
+      : {}),
   });
 };

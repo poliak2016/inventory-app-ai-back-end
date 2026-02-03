@@ -5,7 +5,7 @@ export async function rateLimitCounter ({
   max
 }) {
 try{
-  const count = redis.incr(key);
+  const count = await redis.incr(key);
 
   if(count === 1){
     await redis.expire(key, windowSec)

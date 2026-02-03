@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt"
 import { userRepository } from "../repositories/user.repository.js";
-import { AuthError, ConflictError } from "../errors/autorithation/auth.js";
+import { AuthError, ConflictError } from "../errors/autorization/authErrors.js";
 
 
 export const registrUser = async({name, email, password}) =>{
