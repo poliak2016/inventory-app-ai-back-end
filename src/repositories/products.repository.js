@@ -1,3 +1,4 @@
+import { logger } from "../config/logger.js";
 import { query } from "../db/query.js";
 import { qCreateProduct, qFindProductById, qDeleteProduct, qUpdateProduct, qGetAll } from "../model/products.model.js";
 
@@ -11,23 +12,26 @@ export const productsRepository = {
     const {rows} = await query(qFindProductById, [id]);
     return rows[0] ?? null;
   },
-
-  async create({name, quantity, price, categoryId}){
+  
+  async create({name,price, quantity, category_id}){
+    
     const {rows} = await query(qCreateProduct, [
       name, 
-      quantity, 
       price, 
-      categoryId])
+      quantity, 
+      category_id])
     return rows[0];
   },
 
-  async update(id,{name, quantity, price, categoryId}){
+  async update(id,{name, price, quantity, category_id}){
+    logger.info("SQL values", { values: [id, name, price, quantity, category_id] });
+
     const {rows} = await query(qUpdateProduct, [
       id, 
       name, 
-      quantity, 
-      price, 
-      categoryId
+      price,
+      quantity,
+      category_id
     ])
     return rows[0] ?? null;
   },

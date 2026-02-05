@@ -38,9 +38,13 @@ export const getProductId = async (id) => {
   return result;
 };
 
-export const createProduct = async ({ name, price, quantity }) => {
+export const createProduct = async ({ name, price, quantity, categoryId }) => {
+
+  if(!categoryId){
+    throw new NotFoundError("Category is not exist")
+  }
   
-  const result = await productsRepository.create(name, price, quantity);
+  const result = await productsRepository.create({name, price, quantity, categoryId});
 
   await delCache(CACHE_KEYS.PRODUCTS.ALL);
   return result;

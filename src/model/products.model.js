@@ -35,7 +35,8 @@ export const qUpdateProduct = `
   SET
     name = $2,
     price = $3,
-    quantity = $4
+    quantity = $4,
+    category_id = $5,
     updated_at = NOW()
   WHERE id = $1
   RETURNING ${PRODUCTS_COLUMNS}

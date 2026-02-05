@@ -1,18 +1,14 @@
 import { ValidationError } from "../../errors/products/productErrors.js";
 
-export const validate = (schema, source = "body") => {
-  return (req, res, next) => {
-    const data = req[source];
-    const result = schema.safeParse(data);
+export const validate = (schema, source = "body") => (req, _res, next) => {
+  const result = schema.safeParse(req[source]);
 
-   if (!result.success) {
-      return next(
-        new ValidationError(`Invalid request ${source}`, {
-          issues: result.error.issues,
-        })
-      );
-    }
-    req[source] = result.data;
-    return next();
-  };
+  if (!result.success) {
+    throw new ValidationError(`Invalid request ${source}`, {
+      issues: result.error.issues,
+    });
+  }
+
+  req[source] = result.data;
+  return next();
 };

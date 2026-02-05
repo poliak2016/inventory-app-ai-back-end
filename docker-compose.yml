@@ -2,11 +2,7 @@ services:
   db:
     image: postgres:16
     env_file:
-      - .env.prod
-    environment:
-      POSTGRES_DB: ${DB_NAME:-inventory_app}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-}
+      - .env.docker
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,11 +18,10 @@ services:
     ports:
       - "${APP_PORT:-3000}:3000"
     env_file:
-      - .env.prod
+      - .env.dev
     environment:
       NODE_ENV: production
       DB_HOST: db
-      DATABASE_URL: postgres://${DB_USER:-postgres}:${DB_PASSWORD:-}@db:${DB_PORT:-5432}/${DB_NAME:-inventory_app}
     depends_on:
       db:
         condition: service_healthy

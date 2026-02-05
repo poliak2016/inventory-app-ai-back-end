@@ -2,12 +2,13 @@ import {BaseError} from '../base.error.js';
 
 export class NotFoundError extends BaseError {
   constructor(resource = "Product") {
-    super(`${resource} not found`, 404);
+    super(`${resource} Not Found`, 404);
   }
 };
 
 export class ValidationError extends BaseError {
-  constructor(message = "Validation Error") {
-    super(message, 400,);
+  constructor(message = "Validation error", details = null) {
+    super(message, 400);
+    this.details = details;
   }
 }
