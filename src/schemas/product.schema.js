@@ -24,10 +24,10 @@ export const createProductSchema = z.object({
 
   categoryId: z
     .string({
-      required_error: "Category ID is required",
+      // required_error: "Category ID is required",
       invalid_type_error: "Category ID must be a string",
     })
-    .uuid("Category ID must be a valid UUID"),
+    .uuid("Category ID must be a valid UUID").optional()
 });
 
 export const validateIdSchema = (name = "id") => z.object({

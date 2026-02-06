@@ -13,13 +13,13 @@ export const productsRepository = {
     return rows[0] ?? null;
   },
   
-  async create({name,price, quantity, category_id}){
+  async create({name,price, quantity}){
     
     const {rows} = await query(qCreateProduct, [
       name, 
       price, 
-      quantity, 
-      category_id])
+      quantity
+      ])
     return rows[0];
   },
 

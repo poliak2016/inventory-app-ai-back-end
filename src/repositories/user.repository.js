@@ -1,7 +1,13 @@
 import { query } from "../db/query.js"
-import { qFindById, qCreate, qFindByEmail } from "../model/user.model.js"
+import { qFindById, qCreate, qFindByEmail, qGetUser} from "../model/user.model.js"
 
 export const userRepository = {
+// Get users
+  async getAll() {
+    const { rows } = await query(qGetUser);
+    return rows[0]
+
+},
 // Find user by id
   async findById(id) {
     const {rows} = await query(qFindById, [id])

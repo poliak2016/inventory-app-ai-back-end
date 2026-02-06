@@ -15,6 +15,12 @@ export const USER_PRIVATE_COLUMNS = `
   password_hash AS "passwordHash"
 `;
 
+export const qGetUser = `
+SELECT ${USER_COLUMNS}
+FROM ${USER_TABLE}
+ORDER BY created_at DESC
+`
+
 export const qFindById = `
   SELECT ${USER_PRIVATE_COLUMNS}
   FROM ${USER_TABLE}

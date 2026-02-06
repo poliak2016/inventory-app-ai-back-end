@@ -14,6 +14,7 @@ app.use("/health", healthRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 
+
 app.use(errorMiddleware);
 
 export default app;

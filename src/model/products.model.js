@@ -25,8 +25,8 @@ export const qFindProductById = `
 `;
 
 export const qCreateProduct = `
-  INSERT INTO ${PRODUCTS_TABLE} (name, price, quantity, category_id)
-  VALUES ($1, $2, $3, $4)
+  INSERT INTO ${PRODUCTS_TABLE} (name, price, quantity)
+  VALUES ($1, $2, $3)
   RETURNING ${PRODUCTS_COLUMNS}
 `;
 

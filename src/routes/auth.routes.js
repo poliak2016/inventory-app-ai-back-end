@@ -1,10 +1,12 @@
 import {Router} from "express"
-import { createUser } from "../controllers/auth.controller.js"
+import { createUser, getUser, login} from "../controllers/auth.controller.js"
 import { validate } from "../middleware/validation/validate.middleware.js"
-import { registerSchema } from "../schemas/auth.schema.js"
+import { registerSchema, loginSchema } from "../schemas/auth.schema.js"
 
 const router = Router()
 
-router.post("/", validate(registerSchema), createUser)
+router.get("/register", getUser)
+router.post("/register", validate(registerSchema), createUser)
+router.post("/login", validate(loginSchema), login)
 
 export default router
