@@ -4,7 +4,7 @@ import { AuthError, ConflictError } from "../errors/autorization/authErrors.js";
 import { signJWT } from "../infrastructure/auth/signJWT.js"; 
 
 
-export const registrUser = async({name, email, password}) =>{
+export const registerUser = async({name, email, password}) =>{
 
     if (!name || !email || !password){
     throw new AuthError("name/email/password are required")
