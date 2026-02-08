@@ -1,7 +1,6 @@
 import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
-import { qFindById } from "../model/user.model.js";
-import { registerUser, authService } from "../services/auth.service.js";
-import { AuthError } from "../errors/autorization/authErrors.js";
+import { registerUser, authService, getMe } from "../services/auth.service.js";
+
 
 
 export const createUser = asyncHandler(async(req, res) =>{
@@ -17,11 +16,8 @@ export const createUser = asyncHandler(async(req, res) =>{
 })
 
 export const me = asyncHandler(async(req,res) =>{
-  const user = await qFindById(req.user.sub);
+  const user = await getMe(req.user.id);
 
-  if(!user){
-    throw new AuthError("User not found")
-  }
   res.status(200).json({
     message: "success",
     data: {user}

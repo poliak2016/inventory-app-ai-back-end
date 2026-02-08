@@ -4,7 +4,7 @@ import { AuthError } from "../../errors/autorization/authErrors.js"
 
 export const verifyJWT = (token) =>{
 
-  if(env.JWT_SECRET){
+  if(!env.JWT_SECRET){
     throw new Error("Secret not set")
   }
   try{

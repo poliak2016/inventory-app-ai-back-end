@@ -26,10 +26,15 @@ export const registerUser = async({name, email, password}) =>{
     return newUser;
 };
 
-export const getAllUsers = async() =>{
-  const result = await userRepository.getAll();
-  return result
+export const getMe = async(userId) =>{
+  const user = await userRepository.findById(userId);
+
+  if(!user){
+    throw new AuthError("User not found")
+  }
+  return user
 };
+
   export const authService = { 
   async login ({password, email}) {
   const user = await userRepository.findByEmail(email)
@@ -43,9 +48,9 @@ export const getAllUsers = async() =>{
   }
 
   return signJWT({
-    user: user.id,
+    sub: user.id,
     email: user.email,
     role: user.role
-    })
+    });
   }
 }
