@@ -1,12 +1,16 @@
+
+import { env } from "../config/env.js";
+import { AuthError } from "../errors/autorization/authErrors.js";
 import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
-import { registerUser, authService, getMe } from "../services/auth.service.js";
+import { registerUserService, loginUserService, getMeService, refreshUserService } from "../services/auth.service.js";
 
 
 
-export const createUser = asyncHandler(async(req, res) =>{
+export const createUserController = asyncHandler(async(req, res) =>{
   const {name, password, email} =req.body;
  
-  const newUser = await registerUser({name, password, email})
+  const newUser = await registerUserService({name, password, email})
+  console.log(newUser)
   return res.status(201).json({
     name: newUser.name,
     id: newUser.id,
@@ -15,22 +19,69 @@ export const createUser = asyncHandler(async(req, res) =>{
   });
 })
 
-export const me = asyncHandler(async(req,res) =>{
-  const user = await getMe(req.user.id);
+export const loginUserController = asyncHandler(async(req,res) => {
+  const {email, password} = req.body;
+
+  const {accessToken, refreshToken} = await loginUserService({email, password});
+  
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/api/auth/refresh",
+    maxAge: 30 * 24 * 60 * 60 * 1000
+  });
+
+  return(res.status(200).json({
+    status: "success",
+    accessToken,
+  })
+)
+});
+
+export const getMeController = asyncHandler(async(req,res) =>{
+  const user = await getMeService(req.user.id);
 
   res.status(200).json({
     message: "success",
     data: {user}
-  })
-})
-
-export const login = asyncHandler(async(req,res) => {
-  const {email, password} = req.body;
-
-  const token = await authService.login({email, password});
-
-  res.status(200).json({
-    status: "success",
-    accessToken: token,
   });
+});
+
+
+export const refreshUserController = asyncHandler(async (req, res) => {
+  const refreshTokenFromCookie = req.cookies?.refreshToken;
+
+  if (!refreshTokenFromCookie) {
+    throw new AuthError("Refresh token missing");
+  }
+
+  const { accessToken, refreshToken: newRefreshToken } =
+    await refreshUserService(refreshTokenFromCookie);
+    
+  res.cookie("refreshToken", newRefreshToken, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/api/auth/refresh",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
+
+  return res.status(200).json({
+    status: "success",
+    accessToken,
+  });
+});
+
+export const logoutUserController = asyncHandler(async(req, res) => {
+  res.clearCookie(
+    "refreshToken", 
+    {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/api/auth/refresh"
+  });
+
+  res.status(200).json("success")
 })

@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "envalid": "^8.1.1",
@@ -56,9 +57,7 @@
     "migrate:down": "node-pg-migrate down -m ./migrations",
     "migrate:test": "dotenv -e .env.test -- node-pg-migrate up -m ./migrations",
     "migrate:up:dev": "dotenv -e .env.dev -- node-pg-migrate up -m ./migrations",
-
     "db:psql": "docker compose -f docker-compose.yml -f docker-compose.dev.yml exec db psql -U postgres -d inventory_app"
-
   },
   "type": "module",
   "version": "1.0.0"
