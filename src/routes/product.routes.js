@@ -6,10 +6,8 @@ import {
   updateProductData,
   deleteProductData,
 } from "../controllers/products.controller.js";
-import { validate } from "../middleware/validate.js";
-import { createProductSchema } from "../schemas/productSchema.js";
-import { validateIdSchema } from "../schemas/validateIdSchema.js";
-import { updateProductSchema } from "../schemas/updateProductSchema.js";
+import { validate } from "../middleware/validation/validate.middleware.js";
+import { createProductSchema,  updateProductSchema, validateIdSchema } from "../schemas/product.schema.js";
 
 const router = Router();
 

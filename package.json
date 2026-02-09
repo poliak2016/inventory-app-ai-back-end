@@ -1,9 +1,12 @@
 {
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "envalid": "^8.1.1",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.16.3",
     "redis": "^5.10.0",
     "uuid": "^13.0.0",
@@ -41,7 +44,6 @@
     "dev": "dotenv -e .env.dev -- cross-env NODE_ENV=development nodemon --legacy-watch src/server.js",
     "test": "npm run migrate:test && dotenv -e .env.test -- cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
     "start": "node src/server.js",
-
     "docker:dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build",
     "docker:dev:down": "docker compose -f docker-compose.dev.yml down -v",
     "docker:prod": "docker compose -f docker-compose.yml up --build",
@@ -49,13 +51,13 @@
     "docker:test": "docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from api",
     "docker:test:down": "docker compose -f docker-compose.test.yml down -v",
     "lint": "eslint .",
-
     "migrate:create": "node-pg-migrate create -m ./migrations",
     "migrate:up": "node-pg-migrate up -m ./migrations",
     "migrate:up:local": "dotenv -e .env.dev -- node-pg-migrate up -m ./migrations",
     "migrate:down": "node-pg-migrate down -m ./migrations",
     "migrate:test": "dotenv -e .env.test -- node-pg-migrate up -m ./migrations",
-    "migrate:up:dev": "dotenv -e .env.dev -- node-pg-migrate up -m ./migrations"
+    "migrate:up:dev": "dotenv -e .env.dev -- node-pg-migrate up -m ./migrations",
+    "db:psql": "docker compose -f docker-compose.yml -f docker-compose.dev.yml exec db psql -U postgres -d inventory_app"
   },
   "type": "module",
   "version": "1.0.0"

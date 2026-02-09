@@ -1,6 +1,6 @@
 import {query} from "../db/query.js" 
-import { asyncHandler } from "../middleware/asyncHandler.js";
-import { initRedis } from "../config/redis.js";
+import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
+import { initRedis } from "../infrastructure/redis/redis.client.js";
 
 export const healthCheck = asyncHandler(async(req, res) => {
   const result = await query(`SELECT NOW()`)

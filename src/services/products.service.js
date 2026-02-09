@@ -1,111 +1,88 @@
-import { v4 as uuid } from "uuid";
-import {query} from "../db/query.js";
-import { ValidationError } from "../errors/ValidationError.js";
-import { NotFoundError } from "../errors/NotFoundError.js";
-import { getRedis } from "../config/redis.js";
-  
-let redis = getRedis()
+import { ValidationError, NotFoundError } from "../errors/products/productErrors.js";
+import { productsRepository } from "../repositories/products.repository.js";
+import { CACHE_KEYS } from "../infrastructure/redis/cache.keys.js";
+import { getCache, setCache, delCache } from "../infrastructure/redis/cache.helper.js";
+
+const TTL_SECONDS = 60;
 
 export const getAll = async () => {
-   const cacheKey = 'products:all';
-   const cached = await redis.get(cacheKey);
-   if (cached) return JSON.parse(cached);
-   const result = await  query(`
-    SELECT * 
-    FROM products 
-    ORDER BY created_at DESC
-    `);
-   await redis.set(
-    cacheKey, 
-    JSON.stringify(result.rows),
-    { EX: 60 }
-   );
-   return result.rows;
+  const key = CACHE_KEYS.PRODUCTS.ALL;
+
+  const cached = await getCache(key);
+  if (cached) return cached;
+
+  const result = await productsRepository.getAll();
+
+  await setCache(key, result, TTL_SECONDS);
+  return result;
 };
 
 export const getProductId = async (id) => {
-  const cacheKey = `products:${id}`;
-  if (!id){
-    throw new ValidationError("Product id is required")
-  }
-   const cached = await redis.get(cacheKey)
-  if(cached) return JSON.parse(cached)
-  const result = await query(
-    `
-    SELECT *
-    FROM products
-    WHERE id = $1
-    `,
-    [id]
-    );
-    const product = result.rows[0] || null
-   await redis.set(
-    cacheKey, 
-    JSON.stringify(product),
-    { EX: 60 }
-   )
-    return result.rows[0] || null
+
+  if (!id) {
+  throw new ValidationError("Product id is required");
 }
 
-export const createProduct = async ({name, price, quantity}) => {
-  if (!name || quantity===null || price === null){
-    throw new ValidationError("name, quantity, price are required")
+  const key = CACHE_KEYS.PRODUCTS.BY_ID(id);
+
+  const cached = await getCache(key);
+  if (cached) return cached;
+
+  const result = await productsRepository.findByID(id);
+
+  if (!result) {
+    throw new NotFoundError("Product does not exist");
   }
-  const id =uuid();
-  const result = await query(
-    `
-    INSERT INTO products (id, name, price, quantity)
-    VALUES ($1, $2, $3, $4)
-    RETURNING *
-    ` ,
-    [id, name, price, quantity]
-  );
-  await redis.del("products:all");
-  return result.rows[0]
-}
+
+  await setCache(key, result, TTL_SECONDS);
+  return result;
+};
+
+export const createProduct = async ({ name, price, quantity}) => {
+  
+  const result = await productsRepository.create({name, price, quantity});
+
+  await delCache(CACHE_KEYS.PRODUCTS.ALL);
+  return result;
+};
 
 export const updateProduct = async (id, productData) => {
-  if (!id){
-    throw new ValidationError("Product id is required")
+  if (!id) {
+    throw new ValidationError("Product id is required");
+  }
+  if (!productData || Object.keys(productData).length === 0) {
+    throw new ValidationError("No fields provided for update");
   }
 
-  const {name, price, quantity} =productData;
+  const result = await productsRepository.update(id, productData);
 
-  const result = await query(
-    `
-    UPDATE products
-    SET 
-      name = $2, 
-      price= $3, 
-      quantity = $4 
-    WHERE id = $1
-    RETURNING *
-    `,
-  [id, name, price, quantity]
-);
-  await redis.del(`products:${id}`);
-  await redis.del("products:all");
-    return result.rows[0] || null
-}
+  if (!result) {
+    throw new NotFoundError("Product not found");
+  }
+
+  await Promise.all([
+    delCache(CACHE_KEYS.PRODUCTS.ALL),
+    delCache(CACHE_KEYS.PRODUCTS.BY_ID(id)),
+  ]);
+
+  return result;
+};
 
 export const deleteProduct = async (id) => {
-
-   if (!id){
-    throw new ValidationError("Product id is required")
+  if (!id) {
+    throw new ValidationError("Product ID is required");
   }
-const result = await query (
-  `
-  DELETE FROM products 
-  WHERE id = $1
-  RETURNING *
-  `,
-  [id]
-)
 
-if (result.rowCount === 0) {
+  const result = await productsRepository.delete(id);
+
+  if (result?.rowCount === 0) {
     throw new NotFoundError("Product not found");
-  };
-  await redis.del(`products:${id}`);
-  await redis.del("products:all");
+  }
+
+  await Promise.all([
+    delCache(CACHE_KEYS.PRODUCTS.ALL),
+    delCache(CACHE_KEYS.PRODUCTS.BY_ID(id)),
+  ]);
+
   return true;
-}
+};

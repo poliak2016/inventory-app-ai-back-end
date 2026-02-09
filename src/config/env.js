@@ -36,6 +36,18 @@ export const env = cleanEnv(process.env, {
 
   REDIS_URL: str({default:""}),
   REDIS_ENABLE: bool({}),
+
   RATE_LIMIT_WINDOW_SEC: num(),
-  RATE_LIMIT_MAX: num()
+  RATE_LIMIT_MAX: num(),
+
+  JWT_ACCESS_SECRET: str(),
+  JWT_REFRESH_SECRET: str(),
+  JWT_ACCESS_EXPIRES_IN: str(),
+  JWT_REFRESH_EXPIRES_IN: str(),
+
+  BCRYPT_SALT_ROUNDS: num({
+    min:4,
+    max:15,
+    default: 10,
+  }),
 });
