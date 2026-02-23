@@ -26,12 +26,6 @@ export const env = cleanEnv(process.env, {
     choices: ["error", "warn", "info", "debug"]
   }),
 
-  // DB_HOST: str(),
-  // DB_PORT: num({default: 5432}),
-  // DB_USER: str(),
-  // DB_PASSWORD: str(),
-  // DB_NAME: str(),
-
   DATABASE_URL: str(),
 
   REDIS_URL: str({default:""}),

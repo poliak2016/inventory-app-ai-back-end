@@ -1,38 +1,39 @@
 /* eslint-env jest */
-import request from "supertest";
-import app from "../../../src/app.js";
+import { api } from "../../setup/testClient.js";
 import { logger } from "../../../src/config/logger.js";
+import { newProduct } from "../../setup/factory.js";
 
 describe("products API (integration)", () => {
-  let createdId;
+  
+  it("Should create new product", async()=>{
 
-  beforeAll(async () => {
-    const newProduct = {
-      name: "Test Product",
-      price: 10.99,
-      quantity: 5,
-    };
-    const res = await request(app)
+    const res = await api
       .post("/api/products")
       .send(newProduct);
 
 
-    createdId = res.body.data.id; 
+    const createdId = res.body.data.id; 
     expect(createdId).toBeDefined();
 
     logger.info("POST/api/products->", res.statusCode, res.body);
-
   });
 
   it("should return list of products", async () => {
-    const res = await request(app).get("/api/products");
+
+    const res = await api.get("/api/products");
+
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.headers["content-type"]).toMatch(/json/);
   });
 
   it("should return item by id", async () => {
-    const res = await request(app).get(`/api/products/${createdId}`);
+
+    const product = await api.post("/api/products").send(newProduct)
+
+    const createdId = product.body.data.id
+
+    const res = await api.get(`/api/products/${createdId}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.status).toBe("success");
     expect(res.body.data.id).toBe(createdId);
@@ -45,7 +46,11 @@ describe("products API (integration)", () => {
       "name": "UpdateTest"
     };
 
-    const res = await request(app).put(`/api/products/${createdId}`)
+    const product = await api.post("/api/products").send(newProduct)
+
+    const createdId = product.body.data.id
+
+    const res = await api.put(`/api/products/${createdId}`)
     .send(updateProductTest)
 
     expect(res.status).toBe(200)
@@ -55,7 +60,12 @@ describe("products API (integration)", () => {
   });
 
   it("should delete product", async() => {
-    const res = await request(app).delete(`/api/products/${createdId}`);
+
+    const product = await api.post("/api/products").send(newProduct)
+
+    const createdId = product.body.data.id
+
+    const res = await api.delete(`/api/products/${createdId}`);
     expect(res.status).toBe(204);
     expect(res.body).toEqual({})
   });

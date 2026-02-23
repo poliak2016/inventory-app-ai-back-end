@@ -13,9 +13,8 @@ services:
     build: 
       context: .
       target: test
-    command: npm run test:docker
+    command: sh -c "npm run db:reset:test:docker && npm run migrate:test:docker && npm run test"
     env_file:
-      - .env.test
       - .env.docker.test
     environment:
       NODE_ENV: test
