@@ -1,6 +1,6 @@
 export const newUser = {
   name: "John",
-  email: "john@dollar.com",
+  email: `john.${Date.now()}@dollar.com`,
   password: "12345678",
   role: "admin"
 }

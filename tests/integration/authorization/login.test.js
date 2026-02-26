@@ -14,7 +14,7 @@ describe("Auth /api/auth/login", () => {
     expect(loginRes.body.accessToken).toBeDefined();
 
     const meRes = await api
-      .get("/api/auth/me")
+      .get("/api/auth/user")
       .set("Authorization", `Bearer ${loginRes.body.accessToken}`);
 
     expect(meRes.statusCode).toBe(200);

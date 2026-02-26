@@ -11,7 +11,7 @@ export const authRequire = async(req, res, next) =>{
     if(!token){
       throw new AuthError({message: "Authentication are required"})
     }
-
+    console.log(req.headers);
     const payload =verifyAccessToken(token)
     
     req.user = {
