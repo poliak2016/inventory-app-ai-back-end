@@ -1,7 +1,7 @@
 /* eslint-env jest */
 import { api } from "../../setup/testClient.js";
 import { logger } from "../../../src/config/logger.js";
-import { newProduct } from "../../setup/factory.js";
+import { createAdmin, newProduct } from "../../setup/factory.js";
 
 describe("products API (integration)", () => {
   
@@ -59,13 +59,15 @@ describe("products API (integration)", () => {
     expect(res.body.data.quantity).toBe(1)
   });
 
-  it("should delete product", async() => {
+  it("Should delete product", async() => {
 
-    const product = await api.post("/api/products").send(newProduct)
+    let admin = await createAdmin()
+
+    const product = await api.post("/api/products").set("Authorization", `Bearer ${admin}`).send(newProduct)
 
     const createdId = product.body.data.id
 
-    const res = await api.delete(`/api/products/${createdId}`);
+    const res = await api.delete(`/api/products/${createdId}`).set("Authorization", `Bearer ${admin}`);
     expect(res.status).toBe(204);
     expect(res.body).toEqual({})
   });
