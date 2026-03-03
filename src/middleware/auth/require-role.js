@@ -1,4 +1,4 @@
-import { ForbiddenError } from "../../errors/autorization/authErrors";
+import { ForbiddenError } from "../../errors/autorization/authErrors.js";
 
 export const requireRole = (role) => { 
   return (req,res, next) =>{

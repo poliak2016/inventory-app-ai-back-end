@@ -61,7 +61,9 @@ export const getMeService = async(userId) =>{
 };
 
 export const refreshUserService = async(refreshToken) =>{
-  const payload = verifyRefreshToken(refreshToken)
+  const payload = verifyRefreshToken(refreshToken);
+
+  // const tokenHash = hash(payload)
 
   const user = await userRepository.findById(payload.sub);
   if (!user) throw new AuthError("User not found");
