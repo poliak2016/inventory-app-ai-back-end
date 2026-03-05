@@ -1,9 +1,9 @@
-import { qCreateRefreshToken, qFindValidByHash, qRevokeAllForUser, qRevokeByHash, qRevokeById } from "../model/token.model.js";
+import { qCreateRefreshToken, qFindValidByHash, qFindByHash, qRevokeAllForUser, qRevokeByHash, qRevokeById } from "../model/token.model.js";
 
 
-export const refreshTokenRepo= {
+export const refreshTokenRepository= {
 
- async CreateRefreshToken(db, {id, userId, tokenHash, expiresAt}){
+ async createRefreshToken(db, {id, userId, tokenHash, expiresAt}){
   const {rows} = await db.query(qCreateRefreshToken, [
     id, 
     userId,
@@ -14,6 +14,11 @@ export const refreshTokenRepo= {
 },
 
 async findByHash(db, tokenHash){
+  const {rows} = await db.query(qFindByHash, [tokenHash])
+  return rows[0] || null;
+},
+
+async findValidByHash(db, tokenHash){
   const {rows} = await db.query(qFindValidByHash, [tokenHash])
   return rows[0] || null;
 },

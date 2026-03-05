@@ -16,6 +16,13 @@ VALUES ($1, $2, $3, $4)
 RETURNING ${REFRESH_TOKEN_COLUMNS}
 `;
 
+export const qFindByHash = `
+SELECT ${REFRESH_TOKEN_COLUMNS}
+FROM ${REFRESH_TOKEN_TABLE}
+WHERE token_hash = $1
+LIMIT 1
+`;
+
 export const qFindValidByHash = `
 SELECT ${ REFRESH_TOKEN_COLUMNS }
 FROM ${REFRESH_TOKEN_TABLE}
