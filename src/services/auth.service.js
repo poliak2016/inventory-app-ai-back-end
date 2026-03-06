@@ -5,7 +5,7 @@ import { AuthError, ConflictError } from "../errors/autorization/authErrors.js";
 import { signAccessToken, signRefreshToken } from "../infrastructure/auth/signJWT.js"; 
 import { verifyRefreshToken } from "../infrastructure/auth/verify-jwt-token.js";
 import { transactionFunc } from "../db/transaction.js";
-import { refreshTokenExpires } from "../infrastructure/auth/helpers/refreshTokenExpiresAt.js";
+import { expiresAt} from "../infrastructure/auth/helpers/refreshTokenExpiresAt.js";
 import {hashPassword } from "../infrastructure/auth/helpers/passwordHash.js";
 import { v4 as uuidv4 } from "uuid";
 
@@ -53,7 +53,7 @@ export const registerUserService = async({name, email, password}) =>{
       id: uuidv4(),
       user_id: user.id,
       token_hash: tokenHash,
-      expires_at: refreshTokenExpires()
+      expires_at: expiresAt()
     });
 
     return {accessToken, refreshToken}
@@ -103,7 +103,7 @@ export const refreshUserService = async (refreshToken) => {
       id: uuidv4(),
       user_id: valid.user_id,
       token_hash: newHash,
-      expires_at: refreshTokenExpires(),
+      expires_at: expiresAt(),
     });
 
     return {

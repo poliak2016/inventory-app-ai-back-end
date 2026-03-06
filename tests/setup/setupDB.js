@@ -3,6 +3,7 @@ import { logger } from "../../src/config/logger.js";
 import { execSync } from "child_process";
 import { query} from "../../src/db/query.js"; 
 
+
 const setupDB = async () => {
   if (!env.DATABASE_URL?.includes("_test")) {
     throw new Error("You are trying to reset a non-test database!");

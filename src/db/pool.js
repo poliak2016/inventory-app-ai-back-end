@@ -1,4 +1,4 @@
-import {Pool, Client} from "pg";
+import { Pool } from "pg";
 import {env} from "../config/env.js"
 
 export const pool = new Pool(
@@ -12,13 +12,3 @@ export const pool = new Pool(
   database: env.DB_NAME,
 });
 
-export const client = new Client(
-  env.DATABASE_URL
-  ? {connectionString: env.DATABASE_URL}
-  : {
-  host: env.DB_HOST,
-  port: env.DB_PORT,
-  user: env.DB_USER,
-  password: env.DB_PASSWORD,
-  database: env.DB_NAME,
-});
