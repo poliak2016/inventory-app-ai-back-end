@@ -1,11 +1,11 @@
 export const REFRESH_TOKEN_TABLE = "refresh_tokens"
 
 export const REFRESH_TOKEN_COLUMNS = `
-id
-user_id
-token_hash
-expires_at
-revoked_at
+id,
+user_id,
+token_hash,
+expires_at,
+revoked_at,
 created_at
 `;
 

@@ -49,15 +49,18 @@ export const registerUserService = async({name, email, password}) =>{
 
     const tokenHash = hashRefreshToken(refreshToken);
 
-    await refreshTokenRepository.createRefreshToken({
+    return transactionFunc(async(db) =>{ 
+      await refreshTokenRepository.createRefreshToken(
+      db, {
       id: uuidv4(),
-      user_id: user.id,
-      token_hash: tokenHash,
-      expires_at: expiresAt()
+      userId: user.id,
+      tokenHash: tokenHash,
+      expiresAt: expiresAt()
     });
 
     return {accessToken, refreshToken}
-    }
+  });
+}
 
 //ME SERVICE
 export const getMeService = async(userId) =>{
