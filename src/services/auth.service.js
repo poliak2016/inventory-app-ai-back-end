@@ -6,7 +6,7 @@ import { signAccessToken, signRefreshToken } from "../infrastructure/auth/signJW
 import { verifyRefreshToken } from "../infrastructure/auth/verify-jwt-token.js";
 import { transactionFunc } from "../db/transaction.js";
 import { expiresAt} from "../infrastructure/auth/helpers/refreshTokenExpiresAt.js";
-import {hashPassword } from "../infrastructure/auth/helpers/passwordHash.js";
+import {hashPassword, comparePassword} from "../infrastructure/auth/helpers/passwordHash.js";
 import { v4 as uuidv4 } from "uuid";
 
 // REGISTER USER 
@@ -32,7 +32,7 @@ export const registerUserService = async({name, email, password}) =>{
   if (!user){
     throw new AuthError("Invalid email or password");
   }
-  const isValid = await hashPassword(password, user.passwordHash)
+  const isValid = await comparePassword(password, user.passwordHash)
   if (!isValid) {
     throw new AuthError("Invalid email or password");
   }
@@ -74,7 +74,7 @@ export const getMeService = async(userId) =>{
 // REFRESH TOKEN / ROTATION
 export const refreshUserService = async (refreshToken) => {
   const payload = verifyRefreshToken(refreshToken);
-  const tokenHash = hashRefreshToken(refreshToken);
+  const tokenHash = await hashRefreshToken(refreshToken);
 
   return transactionFunc(async (db) => {
     const valid = await refreshTokenRepository.findValidByHash(db, tokenHash);
@@ -104,9 +104,9 @@ export const refreshUserService = async (refreshToken) => {
 
     await refreshTokenRepository.createRefreshToken(db, {
       id: uuidv4(),
-      user_id: valid.user_id,
-      token_hash: newHash,
-      expires_at: expiresAt(),
+      userId: valid.user_id,
+      tokenHash: newHash,
+      expiresAt: expiresAt(),
     });
 
     return {

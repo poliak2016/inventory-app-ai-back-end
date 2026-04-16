@@ -34,11 +34,8 @@ async revokeByHash(db, tokenHash){
 },
 
 async revokeByAllForUser(db, user_id){
-  const {res} = await db.query(qRevokeAllForUser, [user_id])
-  return {
-    rowCount: res.rowCount, 
-    rows: res.rows
-  }
+  const result= await db.query(qRevokeAllForUser, [user_id])
+  return result;
 }
 }
 
