@@ -1,4 +1,3 @@
-
 import { env } from "../config/env.js";
 import { AuthError } from "../errors/autorization/authErrors.js";
 import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
@@ -74,14 +73,14 @@ export const refreshUserController = asyncHandler(async (req, res) => {
 });
 
 export const logoutUserController = asyncHandler(async(req, res) => {
-  res.clearCookie(
-    "refreshToken", 
-    {
+
+
+  res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
     sameSite: "strict",
     path: "/api/auth/refresh"
   });
 
-  res.status(200).json("success")
+  return res.status(200).json({ status: "success" });
 })

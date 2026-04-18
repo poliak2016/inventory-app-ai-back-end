@@ -1,0 +1,16 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/products'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Sample Product",
+      "price": 19.99,
+      "quantity": 10,
+      "categoryId": "11111111-1111-1111-1111-111111111111"
+    }

@@ -1,3 +1,4 @@
+import { pool } from "../db/pool.js";
 import { userRepository } from "../repositories/user.repository.js";
 import { refreshTokenRepository } from "../repositories/token.repository.js";
 import { hashRefreshToken } from "../infrastructure/auth/helpers/tokenHash.js";
@@ -71,10 +72,17 @@ export const getMeService = async(userId) =>{
   return user
 };
 
+export const logoutUserService = async(refreshToken) => {
+ 
+    const tokenHash = hashRefreshToken(refreshToken)
+    await refreshTokenRepository.revokeByHash(pool, tokenHash)
+  }
+
+
 // REFRESH TOKEN / ROTATION
 export const refreshUserService = async (refreshToken) => {
   const payload = verifyRefreshToken(refreshToken);
-  const tokenHash = await hashRefreshToken(refreshToken);
+  const tokenHash = hashRefreshToken(refreshToken);
 
   return transactionFunc(async (db) => {
     const valid = await refreshTokenRepository.findValidByHash(db, tokenHash);

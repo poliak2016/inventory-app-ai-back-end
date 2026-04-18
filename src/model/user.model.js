@@ -6,6 +6,7 @@ export const USER_COLUMNS = `
   id,
   email,
   role,
+  name,
   created_at AS "createdAt",
   update_at AS "updateAt"
 `;
@@ -22,7 +23,7 @@ ORDER BY created_at DESC
 `
 
 export const qFindById = `
-  SELECT ${USER_PRIVATE_COLUMNS}
+  SELECT ${USER_COLUMNS}
   FROM ${USER_TABLE}
   WHERE id = $1
   LIMIT 1
