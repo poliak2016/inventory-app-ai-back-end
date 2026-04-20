@@ -1,4 +1,4 @@
-import { pool } from "../../../src/db/pool.js"; // або твій шлях до pool
+import { pool } from "../../../src/db/pool.js";
 
 describe("DB integration", () => {
 
@@ -18,7 +18,7 @@ describe("DB integration", () => {
       const r1 = await client.query("SELECT 10 AS x");
       expect(r1.rows[0].x).toBe(10);
 
-      // нічого не змінюємо в БД — але показуємо правильний шаблон
+      
       await client.query("ROLLBACK");
     } finally {
       client.release();

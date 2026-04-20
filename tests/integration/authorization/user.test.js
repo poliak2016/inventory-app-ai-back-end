@@ -1,0 +1,76 @@
+import { api } from "../../setup/testClient.js";
+import {newProduct, newUser} from "../../setup/factory.js"
+import { query } from "../../../src/db/query.js";
+
+describe("Auth /api/auth/user", ()=>{
+  it("Should return 401 if token is missing", async () => {
+    const res = await api.get("/api/auth/user");
+    expect(res.statusCode).toBe(401);
+  });
+
+  it("GET /auth/user with valid token 200 + correct user payload", async () =>{
+
+     await api.post("/api/auth/register").send(newUser);
+
+    const loginRes = await api.post("/api/auth/login").send({
+      email: newUser.email,
+      password: newUser.password
+    });
+
+    const token = loginRes.body.accessToken;
+    expect(loginRes.body.accessToken).toBeDefined();
+    
+
+    const res = await api.get("/api/auth/user").set("Authorization", `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(200);
+    
+  });
+
+  it("Should return new refresh token", async()=>{
+
+    await api.post("/api/auth/register").send(newUser);
+
+    const loginRes = await api.post("/api/auth/login").send({
+      email: newUser.email,
+      password: newUser.password,
+    });
+    const cookies = loginRes.headers["set-cookie"];
+
+    const res = await api.post("/api/auth/refresh").set("Cookie", cookies);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.accessToken).toBeDefined();
+    expect(res.headers["set-cookie"]).toBeDefined();
+  });
+
+  it("Should block non-admin user (403)", async()=>{
+
+    await api.post("/api/auth/register").send(newUser);
+    
+    await query(`
+      UPDATE users SET role = $1 WHERE email = $2`,
+      ["staff", newUser.email]
+      )
+
+    const resLogin = await api.post("/api/auth/login").send({
+      email: newUser.email,
+      password: newUser.password
+    });
+    expect(resLogin.statusCode).toBe(200);
+
+
+    const token = resLogin.body.accessToken
+    expect(token).toBeDefined();
+
+    const product = await api.post("/api/products").send(newProduct);
+    expect(product.statusCode).toBe(201);
+
+    const productID = product.body.data.id;
+    expect(productID).toBeDefined();
+
+    const res = await api.delete(`/api/products/${productID}`).set("Authorization", `Bearer ${token}`)
+
+    expect(res.statusCode).toBe(403)
+  });
+})

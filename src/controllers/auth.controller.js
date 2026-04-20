@@ -1,8 +1,7 @@
-
 import { env } from "../config/env.js";
 import { AuthError } from "../errors/autorization/authErrors.js";
 import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
-import { registerUserService, loginUserService, getMeService, refreshUserService } from "../services/auth.service.js";
+import { registerUserService, loginUserService, getMeService, refreshUserService, logoutUserService } from "../services/auth.service.js";
 
 
 
@@ -28,7 +27,8 @@ export const loginUserController = asyncHandler(async(req,res) => {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/api/auth/refresh",
+   
+    path: "/api/auth",
     maxAge: 30 * 24 * 60 * 60 * 1000
   });
 
@@ -63,7 +63,8 @@ export const refreshUserController = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/api/auth/refresh",
+   
+    path: "/api/auth",
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
@@ -74,14 +75,20 @@ export const refreshUserController = asyncHandler(async (req, res) => {
 });
 
 export const logoutUserController = asyncHandler(async(req, res) => {
-  res.clearCookie(
-    "refreshToken", 
-    {
+  const refreshTokenFromCookie = req.cookies?.refreshToken;
+
+
+  if (refreshTokenFromCookie) {
+    
+    await logoutUserService?.(refreshTokenFromCookie);
+  }
+
+  res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/api/auth/refresh"
+    path: "/api/auth"
   });
 
-  res.status(200).json("success")
+  return res.status(200).json({ status: "success" });
 })

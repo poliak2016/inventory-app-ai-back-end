@@ -1,4 +1,4 @@
-import {Pool} from "pg";
+import { Pool } from "pg";
 import {env} from "../config/env.js"
 
 export const pool = new Pool(
@@ -11,3 +11,4 @@ export const pool = new Pool(
   password: env.DB_PASSWORD,
   database: env.DB_NAME,
 });
+
