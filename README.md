@@ -20,7 +20,7 @@ Includes:
 
 ### Local Development
 1. Install dependencies: `npm install`
-2. Create `.env` files (`.env.dev`, `.env.test`) from `.env.example`
+2. Create `.env.dev` and `.env.test` files (use the example env block below as a template)
 3. Run migrations: `npm run migrate:up:dev`
 4. Start server: `npm run dev`
 
@@ -96,10 +96,10 @@ logger.debug('Debug message', { metadata: 'value' });
 ## Features
 
 - **Validation:** All input validated with Zod schemas
-- **Error Handling:** Centralized error middleware, custom error classes, request ID in all error responses
+- **Error Handling:** Centralized error middleware, custom error classes.
 - **Caching:** Product data cached in Redis (if enabled)
 - **Rate Limiting:** Per-IP rate limiting using Redis (configurable via env)
-- **Request ID:** All requests assigned a unique ID (header: `x-request-id`)
+- **Request ID:** (not currently implemented) — add a middleware to inject `x-request-id` if needed.
 - **Testing:** Jest for unit/integration tests, with DB and API coverage
 
 ## Project Structure
@@ -111,15 +111,24 @@ src/
 ├── config/                    # Configuration files
 │   ├── env.js                 # Environment variables (envalid)
 │   ├── logger.js              # Winston logger config
-│   ├── redis.js               # Redis client/config
-│   └── config.js              # Additional config (if any)
+│   └── redis.js               # Redis client/config
 ├── controllers/               # Request handlers
 ├── services/                  # Business logic
 ├── routes/                    # Route definitions
 ├── middleware/                # Express middleware
-│   ├── error.middleware.js    # Error handler
-│   ├── requestLogger.middleware.js # Request logger
-│   └── asyncHandler.js        # Async route wrapper
+│   ├── api/
+│   │   ├── async-handler.middleware.js
+│   │   └── rate-limit.middleware.js
+│   ├── auth/
+│   │   ├── authenticate.js
+│   │   ├── authRequire.js
+│   │   └── require-role.js
++│   ├── error/
+│   │   └── error.middleware.js
+│   ├── logger/
+│   │   └── request-logger.middleware.js
+│   └── validation/
+│       └── validate.middleware.js
 ├── db/                        # Database utilities
 └── errors/                    # Custom error classes
 
@@ -147,7 +156,7 @@ RATE_LIMIT_MAX=100
 ## Security / Secrets
 
 - Do not commit `.env` files or real credentials
-- Use `.env.example` as a template for environment variables
+- Use the example env block above as a template for environment variables (there is no `.env.example` file in the repo)
 - Ensure `uuid-ossp` extension is available (migration creates it if missing)
 - Rotate secrets regularly in production
 
