@@ -5,7 +5,7 @@ export const userRepository = {
 // Get users
   async getAll() {
     const { rows } = await query(qGetUser);
-    return rows[0]
+    return rows
 
 },
 // Find user by id
