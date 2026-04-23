@@ -1,156 +1,131 @@
-# Inventory App AI — Backend
 
-Simple Express + PostgreSQL backend providing a health check and CRUD for products, with integrated Winston logging.
+# Inventory App — Backend (engineering brief)
 
-Includes:
-- Express 5 API with modular structure
-- PostgreSQL with migration scripts (node-pg-migrate)
-- Redis caching and rate limiting
-- Zod validation and custom error handling
-- Winston logging (console and file)
-- Docker Compose for dev, test, and production
-- Full Jest test suite (unit & integration)
+This README focuses on implementation facts and design rationales rather than marketing. It documents how the service currently behaves, where to look in code, and concrete next steps an engineer can take.
 
-## Requirements
-- Node >=20
-- npm >=9
-- PostgreSQL 14+
+## 1 — Purpose (short)
 
-## Quick Start
+Provides a secure, auditable backend for inventory operations (products, categories, stock movements) and multi-organization user onboarding. Suitable as the backend for a web admin, POS, or mobile client.
 
-### Local Development
-1. Install dependencies: `npm install`
-2. Create `.env` files (`.env.dev`, `.env.test`) from `.env.example`
-3. Run migrations: `npm run migrate:up:dev`
-4. Start server: `npm run dev`
+## 2 — Stack (explicit)
 
-#### Scripts
-- `npm run dev` — Start local dev server with hot reload
-- `npm test` — Run all tests (Jest)
-- `npm run lint` — Lint codebase
-- `npm run migrate:up:dev` — Run DB migrations for dev
-- See `package.json` for all available scripts
+- Node.js (ESM) + Express
+- PostgreSQL (`pg`) + `node-pg-migrate`
+- Redis (optional) via `redis` client
+- JWTs (`jsonwebtoken`) — access + refresh; refresh tokens hashed server-side
+- Zod for request validation; `bcrypt` for password hashing; Winston for logs
+- Tests: Jest + Supertest; containers via Docker Compose
 
+## 3 — Concrete architecture and responsibilities
 
-### Docker
-- Dev: `npm run docker:dev` (uses docker-compose.yml + docker-compose.dev.yml)
-- Prod: `npm run docker:prod` (uses docker-compose.yml)
-- Tests: `npm run docker:test` (uses docker-compose.test.yml)
+- Routes: `src/routes` — wire request to controller
+- Controllers: `src/controllers` — HTTP layer only (status codes, cookies)
+- Services: `src/services` — orchestrate business flows and transactions (token rotation, registration)
+- Repositories: `src/repositories` — parameterized SQL queries (see `src/model`)
+- Infrastructure: `src/infrastructure` — Redis client, JWT sign/verify, hashing helpers
 
-#### Production Docker Compose
-- Use `docker-compose.prod.yml` at the project root for production deployments (API, PostgreSQL, Redis, health checks, persistent volumes).
-- Run from project root:
-  - `docker compose -f docker-compose.prod.yml up --build`
-  - See the file for details on environment variables and service configuration.
+Use `src/db/transaction.js` (`transactionFunc(cb)`) for any multi-statement operation requiring atomicity.
 
-## Database Migrations
+## 4 — Authentication (exact behavior)
 
-- Create: `npm run migrate:create -- <name>`
-- Up: `npm run migrate:up`
-- Down: `npm run migrate:down`
-- Test migrations: `npm run migrate:test`
+- Login: `loginUserService` validates credentials, signs an access token and a refresh token (`jti` added), hashes refresh token and stores hash in `refresh_tokens` table within a DB transaction, sets `refreshToken` as `httpOnly` cookie and returns `accessToken`.
+- Refresh: `refreshUserService` verifies refresh JWT, hashes it and looks up a valid DB row (`revoked_at IS NULL` AND `expires_at > now()`). If valid and owner matches payload, the row is revoked, a new refresh token is issued and stored (rotation), and a new access token is issued. If a revoked token is presented (reuse), the service revokes all user tokens and rejects the request. All of this runs inside `transactionFunc`.
+- Logout: revokes the refresh token by hash and clears cookie.
 
-## Running the Application
+Key files: `src/services/auth.service.js`, `src/repositories/token.repository.js`, `src/infrastructure/auth/*`.
 
-- **Dev (local):** `npm run dev`
-- **Dev (Docker):** `npm run docker:dev`
-- **Prod:** `npm start`
-- **Prod (Docker):** `npm run docker:prod`
-- **Tests:** `npm test`
-- **Tests (Docker):** `npm run docker:test`
-- **Lint:** `npm run lint`
+Security notes:
+- Refresh tokens are never persisted raw. The hashing method is in `src/infrastructure/auth/helpers/tokenHash.js`.
+- Cookie settings: `httpOnly`, `sameSite: strict`, `secure` in production, `path: /api/auth`.
 
-## Logging
+## 5 — Database mappings (precise)
 
-The application uses **Winston** for structured logging with the following features:
+Primary tables and important constraints (refer to `migrations/`):
 
-- **Console output:** Colored, human-readable in development; JSON format in production
-- **File transports:** (optional, see logger config)
-- **Exception & rejection handlers:** (optional, see logger config)
-- **Environment configuration:** Set `LOG_LEVEL` in `.env` (default: `info`; choices: `error`, `warn`, `info`, `debug`)
-- **Request logging:** Automatic logging of HTTP requests via middleware
-- **Test logging:** Log level set to `error` during tests for cleaner output
+- `users` — `id UUID PK`, `email UNIQUE`, `password_hash`, `role`, timestamps
+- `organizations` — `id UUID`, `name`, timestamps
+- `products` — `id UUID`, `name`, `price NUMERIC`, `quantity INTEGER`, `category_id` → `categories(id)`
+- `categories` — `id UUID`, `parent_id` (nullable), `slug`
+- `stock_movements` — `product_id` → `products(id)`, `created_by` → `users(id)`, `type` CHECK `('in','out','adjustment')`, `quantity > 0`
+- `refresh_tokens` — `id UUID`, `user_id UUID`, `token_hash TEXT`, `expires_at TIMESTAMPTZ`, `revoked_at TIMESTAMPTZ`, `created_at`
 
-### Logger Usage
+Operational note: `stock_movements` is the audit log; `products.quantity` is maintained as a cache/snapshot.
 
-```javascript
-import { logger } from './config/logger.js';
+## 6 — Caching & Redis specifics
 
-logger.info('Information message');
-logger.warn('Warning message');
-logger.error(errorObject);  // Pass Error object to capture stack trace
-logger.debug('Debug message', { metadata: 'value' });
+- Redis client wraps connection attempt and falls back to a noop client when disabled or unavailable (`src/infrastructure/redis/redis.client.js`).
+- Product endpoints cache: TTL = 60s (see `src/services/products.service.js`), keys `products:all` and `products{id}`; cache invalidated on writes.
+
+## 7 — Runbook (explicit commands)
+
+Install:
+
+```bash
+npm ci
 ```
 
-## API Endpoints
+Run migrations (local .env.dev):
 
-- **Health:** `GET /health`
-- Returns DB and Redis status, timestamp
-- **Products** (prefix `/api/products`):
-  - `GET /` — list all products
-  - `GET /:id` — get product by ID
-  - `POST /` — create product
-  - `PUT /:id` — update product
-  - `DELETE /:id` — delete product
-
-## Features
-
-- **Validation:** All input validated with Zod schemas
-- **Error Handling:** Centralized error middleware, custom error classes, request ID in all error responses
-- **Caching:** Product data cached in Redis (if enabled)
-- **Rate Limiting:** Per-IP rate limiting using Redis (configurable via env)
-- **Request ID:** All requests assigned a unique ID (header: `x-request-id`)
-- **Testing:** Jest for unit/integration tests, with DB and API coverage
-
-## Project Structure
-
-```
-src/
-├── app.js                     # Express app setup
-├── server.js                  # Server startup
-├── config/                    # Configuration files
-│   ├── env.js                 # Environment variables (envalid)
-│   ├── logger.js              # Winston logger config
-│   ├── redis.js               # Redis client/config
-│   └── config.js              # Additional config (if any)
-├── controllers/               # Request handlers
-├── services/                  # Business logic
-├── routes/                    # Route definitions
-├── middleware/                # Express middleware
-│   ├── error.middleware.js    # Error handler
-│   ├── requestLogger.middleware.js # Request logger
-│   └── asyncHandler.js        # Async route wrapper
-├── db/                        # Database utilities
-└── errors/                    # Custom error classes
-
-migrations/                     # Database migrations
-tests/                          # Jest test suite
-
+```bash
+npm run migrate:up:local
 ```
 
-## Environment Variables
+Start (dev):
 
-Create `.env.dev`, `.env.test`, and `.env.prod` files:
-
-```env
-NODE_ENV=development
-APP_PORT=3000
-LOG_LEVEL=info
-
-DATABASE_URL=postgres://user:password@localhost:5432/inventory
-REDIS_URL=redis://localhost:6379
-REDIS_ENABLE=true
-RATE_LIMIT_WINDOW_SEC=60
-RATE_LIMIT_MAX=100
+```bash
+npm run dev
 ```
 
-## Security / Secrets
+Run containerized dev stack:
 
-- Do not commit `.env` files or real credentials
-- Use `.env.example` as a template for environment variables
-- Ensure `uuid-ossp` extension is available (migration creates it if missing)
-- Rotate secrets regularly in production
+```bash
+npm run docker:dev
+```
 
-## Contributing
+Run tests (uses `.env.test`):
 
-PRs and issues welcome! Please lint and test before submitting.
+```bash
+npm run test
+```
+
+## 8 — Required environment variables (validated by code)
+
+- `DATABASE_URL` (required)
+- `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` (required)
+- `JWT_ACCESS_EXPIRES_IN` (e.g. `15m`), `JWT_REFRESH_EXPIRES_IN` (e.g. `30d`)
+- `BCRYPT_SALT_ROUNDS` (default 10)
+- `REDIS_URL`, `REDIS_ENABLE`
+- `APP_PORT`
+
+The app will fail fast if required env variables are missing (see `src/config/env.js`).
+
+## 9 — API endpoints (engineer-focused)
+
+Auth:
+
+- `POST /api/auth/register` — creates organization + admin. Runs inside DB transaction.
+- `POST /api/auth/login` — returns `accessToken` and sets `refreshToken` cookie.
+- `POST /api/auth/refresh` — rotates refresh token, issues new access token.
+- `POST /api/auth/logout` — revokes refresh token.
+
+Products:
+
+- `GET /api/products`
+- `GET /api/products/:id`
+- `POST /api/products`
+- `PUT /api/products/:id`
+- `DELETE /api/products/:id` — protected by `authenticate` & `requireRole('admin')`
+
+Refer to `src/schemas` for request/response shapes.
+
+## 10 — Short-term engineering improvements (concrete tasks)
+
+1. Enforce `organization_id` filtering in every repository; add tests demonstrating cross-tenant access is rejected.
+2. Add DB index on `refresh_tokens(expires_at)` and a scheduled job to `DELETE` expired rows (or `VACUUM` strategy in managed DB).
+3. Add explicit rate limiter on auth endpoints (IP + account throttling); add `RATE_LIMIT_*` defaults in `.env.example`.
+4. Implement smoke CI job: start Postgres+Redis, run migrations, execute a test that performs login → refresh → reuse-detection.
+5. Add an `admin` inspection endpoint (protected) to list active refresh token counts per user for operational debugging.
+
+---
+
+Tell me which concrete follow-up you want: `.env.dev` template, GitHub Actions CI, or a small DB GC script. I can implement one next.

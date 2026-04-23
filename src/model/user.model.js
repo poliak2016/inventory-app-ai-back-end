@@ -8,7 +8,7 @@ export const USER_COLUMNS = `
   role,
   name,
   created_at AS "createdAt",
-  update_at AS "updateAt"
+  updated_at AS "updatedAt"
 `;
 
 export const USER_PRIVATE_COLUMNS = `
@@ -19,6 +19,7 @@ export const USER_PRIVATE_COLUMNS = `
 export const qGetUser = `
 SELECT ${USER_COLUMNS}
 FROM ${USER_TABLE}
+WHERE id = $1
 ORDER BY created_at DESC
 `
 
