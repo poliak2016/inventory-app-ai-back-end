@@ -1,5 +1,6 @@
 import { pool } from "../db/pool.js";
 import { userRepository } from "../repositories/user.repository.js";
+import { organizationRepository } from "../repositories/organizations.repository.js";
 import { refreshTokenRepository } from "../repositories/token.repository.js";
 import { hashRefreshToken } from "../infrastructure/auth/helpers/tokenHash.js";
 import { AuthError, ConflictError } from "../errors/autorization/authErrors.js";
@@ -11,19 +12,39 @@ import {hashPassword, comparePassword} from "../infrastructure/auth/helpers/pass
 import { v4 as uuidv4 } from "uuid";
 
 // REGISTER USER 
-export const registerUserService = async({name, email, password}) =>{
-  const existingUser = await userRepository.findByEmail(email);
-  if (existingUser) {
-    throw new ConflictError("User already exists")
-  };
-  const passwordHash = await hashPassword(password)
-  const newUser = await userRepository.createUser({
-    name,
-    email, 
-    passwordHash,
-    role: "user"
-    });
+export const registerUserService = async ({
+  name,
+  email,
+  password,
+  organizationName
+}) => {
+  return transactionFunc(async (db) => {
+    const existingUser = await userRepository.findByEmail(email, db);
+
+    if (existingUser) {
+      throw new ConflictError("User already exists");
+    }
+
+    const passwordHash = await hashPassword(password);
+
+    const organization = await organizationRepository.createOrganization(
+      organizationName,
+      db
+    );
+
+    const newUser = await userRepository.createUser(
+      {
+        name,
+        email,
+        passwordHash,
+        role: "admin",
+        organization_id: organization.id,
+      },
+      db
+    );
+
     return newUser;
+  });
 };
 
 // LOGIN USER 
@@ -50,17 +71,19 @@ export const registerUserService = async({name, email, password}) =>{
 
     const tokenHash = hashRefreshToken(refreshToken);
 
-    return transactionFunc(async(db) =>{ 
+    return transactionFunc(async (db) => {
       await refreshTokenRepository.createRefreshToken(
-      db, {
-      id: uuidv4(),
-      userId: user.id,
-      tokenHash: tokenHash,
-      expiresAt: expiresAt()
-    });
+        {
+          id: uuidv4(),
+          userId: user.id,
+          tokenHash: tokenHash,
+          expiresAt: expiresAt(),
+        },
+        db
+      );
 
-    return {accessToken, refreshToken}
-  });
+      return { accessToken, refreshToken };
+    });
 }
 
 //ME SERVICE
@@ -75,7 +98,7 @@ export const getMeService = async(userId) =>{
 export const logoutUserService = async(refreshToken) => {
  
     const tokenHash = hashRefreshToken(refreshToken)
-    await refreshTokenRepository.revokeByHash(pool, tokenHash)
+  await refreshTokenRepository.revokeByHash(tokenHash, pool)
   }
 
 
@@ -85,13 +108,13 @@ export const refreshUserService = async (refreshToken) => {
   const tokenHash = hashRefreshToken(refreshToken);
 
   return transactionFunc(async (db) => {
-    const valid = await refreshTokenRepository.findValidByHash(db, tokenHash);
+  const valid = await refreshTokenRepository.findValidByHash(tokenHash, db);
 
     if (!valid) {
-      const any = await refreshTokenRepository.findByHash(db, tokenHash);
+      const any = await refreshTokenRepository.findByHash(tokenHash, db);
 
       if (any?.revoked_at) {
-        await refreshTokenRepository.revokeByAllForUser(db, any.user_id);
+        await refreshTokenRepository.revokeByAllForUser(any.user_id, db);
         throw new AuthError("Refresh token reuse detected");
       }
 
@@ -99,23 +122,26 @@ export const refreshUserService = async (refreshToken) => {
     }
 
     if (valid.user_id !== payload.sub) {
-      await refreshTokenRepository.revokeByAllForUser(db, valid.user_id);
+      await refreshTokenRepository.revokeByAllForUser(valid.user_id, db);
       throw new AuthError("Refresh token mismatch detected");
     }
 
-    await refreshTokenRepository.revokeById(db, valid.id);
+    await refreshTokenRepository.revokeById(valid.id, db);
 
     const newAccessToken = signAccessToken({ sub: valid.user_id });
     const newRefreshToken = signRefreshToken({ sub: valid.user_id });
 
     const newHash = hashRefreshToken(newRefreshToken);
 
-    await refreshTokenRepository.createRefreshToken(db, {
-      id: uuidv4(),
-      userId: valid.user_id,
-      tokenHash: newHash,
-      expiresAt: expiresAt(),
-    });
+    await refreshTokenRepository.createRefreshToken(
+      {
+        id: uuidv4(),
+        userId: valid.user_id,
+        tokenHash: newHash,
+        expiresAt: expiresAt(),
+      },
+      db
+    );
 
     return {
       accessToken: newAccessToken,

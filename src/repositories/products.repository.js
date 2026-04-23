@@ -1,43 +1,36 @@
-import { logger } from "../config/logger.js";
-import { query } from "../db/query.js";
+import {logger } from "../config/logger.js";
+import { getExecutor } from "../db/executor.js";
 import { qCreateProduct, qFindProductById, qDeleteProduct, qUpdateProduct, qGetAll } from "../model/products.model.js";
 
 export const productsRepository = {
-  async getAll(){
-    const{rows} = await query(qGetAll);
-    return rows
+  async getAll(db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qGetAll);
+    return rows;
   },
 
-  async findByID(id){
-    const {rows} = await query(qFindProductById, [id]);
+  async findById(id, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qFindProductById, [id]);
     return rows[0] ?? null;
   },
-  
-  async create({name,price, quantity}){
-    
-    const {rows} = await query(qCreateProduct, [
-      name, 
-      price, 
-      quantity
-      ])
+
+  async create({ name, price, quantity }, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qCreateProduct, [name, price, quantity]);
     return rows[0];
   },
 
-  async update(id,{name, price, quantity, category_id}){
+  async update(id, { name, price, quantity, category_id }, db = null) {
     logger.info("SQL values", { values: [id, name, price, quantity, category_id] });
-
-    const {rows} = await query(qUpdateProduct, [
-      id, 
-      name, 
-      price,
-      quantity,
-      category_id
-    ])
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qUpdateProduct, [id, name, price, quantity, category_id]);
     return rows[0] ?? null;
   },
 
-  async delete(id){
-    const {rows} = await query(qDeleteProduct, [id])
+  async delete(id, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qDeleteProduct, [id]);
     return rows[0] ?? null;
   }
 }

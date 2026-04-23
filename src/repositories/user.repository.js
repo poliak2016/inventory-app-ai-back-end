@@ -1,26 +1,28 @@
-import { query } from "../db/query.js"
-import { qFindById, qCreate, qFindByEmail, qGetUser} from "../model/user.model.js"
+import { getExecutor } from "../db/executor.js";
+import { qFindById, qCreate, qFindByEmail, qGetUser } from "../model/user.model.js";
 
 export const userRepository = {
-// Get users
-  async getAll() {
-    const { rows } = await query(qGetUser);
-    return rows
+  async getAll(db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qGetUser);
+    return rows;
+  },
 
-},
-// Find user by id
-  async findById(id) {
-    const {rows} = await query(qFindById, [id])
-    return rows[0] ?? null
+  async findById(id, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qFindById, [id]);
+    return rows[0] ?? null;
   },
-// Find user by email
-  async findByEmail (email){
-    const {rows} = await query(qFindByEmail, [email])
-    return rows[0] ?? null
+
+  async findByEmail(email, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qFindByEmail, [email]);
+    return rows[0] ?? null;
   },
-// Create user 
-  async createUser({name, email, passwordHash, role}) {
-    const {rows} = await query(qCreate, [name, email, passwordHash, role])
-    return rows[0] ?? null
+
+  async createUser({ name, email, passwordHash, role }, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qCreate, [name, email, passwordHash, role]);
+    return rows[0] ?? null;
   }
-}
+};

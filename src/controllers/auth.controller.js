@@ -5,21 +5,27 @@ import { registerUserService, loginUserService, getMeService, refreshUserService
 
 
 
-export const createUserController = asyncHandler(async(req, res) =>{
-  const {name, password, email} =req.body;
+export const registerUserController = asyncHandler(async(req, res) =>{
+  const { name, password, email, organizationName} =req.body;
  
-  const newUser = await registerUserService({name, password, email})
-  console.log(newUser)
+  const newUser = await registerUserService({
+    name, 
+    password, 
+    email, 
+    organizationName
+  });
+  
   return res.status(201).json({
     name: newUser.name,
     id: newUser.id,
     email: newUser.email,
     role: newUser.role,
+    organization_id: newUser.organization_id
   });
 })
 
 export const loginUserController = asyncHandler(async(req,res) => {
-  const {email, password} = req.body;
+  const { email, password } = req.body;
 
   const {accessToken, refreshToken} = await loginUserService({email, password});
   
