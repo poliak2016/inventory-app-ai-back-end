@@ -56,4 +56,3 @@ WHERE user_id = $1
   AND revoked_at IS NULL
 RETURNING ${REFRESH_TOKEN_COLUMNS}
 `;
-

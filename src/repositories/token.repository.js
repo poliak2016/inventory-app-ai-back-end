@@ -1,5 +1,5 @@
 import { getExecutor } from "../db/executor.js";
-import { qCreateRefreshToken, qFindValidByHash, qFindByHash, qRevokeAllForUser, qRevokeByHash, qRevokeById } from "../model/token.model.js";
+import { qCreateRefreshToken, qFindValidByHash, qFindByHash, qRevokeAllForUser, qRevokeByHash, qRevokeById } from "../model/token.query.js";
 
 
 export const refreshTokenRepository= {

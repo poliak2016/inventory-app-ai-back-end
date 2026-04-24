@@ -1,6 +1,6 @@
 import {logger } from "../config/logger.js";
 import { getExecutor } from "../db/executor.js";
-import { qCreateProduct, qFindProductById, qDeleteProduct, qUpdateProduct, qGetAll } from "../model/products.model.js";
+import { qCreateProduct, qFindProductById, qDeleteProduct, qUpdateProduct, qGetAll } from "../model/products.query.js";
 
 export const productsRepository = {
   async getAll(db = null) {
