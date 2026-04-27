@@ -1,5 +1,5 @@
 import { getExecutor } from "../db/executor.js";
-import { qCreateMovements } from "../model/stock_movements.query.js";
+import { qCreateMovements } from "../query/stock_movements.query.js";
 
 export const createStockMovementRepository = async(data, db=null) =>{
   

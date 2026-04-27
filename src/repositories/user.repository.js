@@ -1,5 +1,5 @@
 import { getExecutor } from "../db/executor.js";
-import { qFindById, qCreate, qFindByEmail, qGetUser } from "../model/user.query.js";
+import { qFindById, qCreate, qFindByEmail, qGetUser } from "../query/user.query.js";
 
 export const userRepository = {
   async getAll(db = null) {
