@@ -1,6 +1,6 @@
 import { transactionFunc } from "../db/transaction.js"
 import { productsRepository } from "../repositories/products.repository.js";
-import { createStockMovementRepository} from "../repositories/stock_movements.repository";
+import { createStockMovementRepository} from "../repositories/stock_movement.repository.js";
 
 
 export const createStockMovementService = async(data)=> {
