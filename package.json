@@ -55,7 +55,7 @@
     "migrate:create": "node-pg-migrate create -m ./migrations",
     "migrate:up": "node-pg-migrate up -m ./migrations",
     "migrate:up:local": "dotenv -e .env.dev -- node-pg-migrate up -m ./migrations",
-    "migrate:down": "node-pg-migrate down -m ./migrations",
+    "migrate:down": "dotenv -e .env.dev -- node-pg-migrate down -m ./migrations",
     "migrate:test": "dotenv -e .env.test -- node-pg-migrate up -m ./migrations",
     "migrate:test:docker": "node-pg-migrate up -m ./migrations",
     "db:reset:test:docker": "node src/scripts/resetTestDB.script.js",

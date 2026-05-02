@@ -1,4 +1,4 @@
-// src/models/user.model.js
+// src/models/user.query.js
 
 export const USER_TABLE = "users";
 

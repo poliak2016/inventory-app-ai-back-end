@@ -17,11 +17,6 @@ router.get("/", getProducts)
 router.get("/:id", validate(validateIdSchema(), "params"), getProductById)
 router.post("/", validate(createProductSchema, "body"), createNewProduct)
 router.put("/:id", validate(validateIdSchema(), "params"), validate(updateProductSchema, "body"), updateProductData)
-router.delete(
-  "/:id", 
-  authenticate,
-  requireRole("admin"), 
-  validate(validateIdSchema(), "params"), 
-  deleteProductData)
+router.delete("/:id", authenticate, requireRole("admin"), validate(validateIdSchema(), "params"), deleteProductData)
 
 export default router;

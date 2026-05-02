@@ -9,28 +9,15 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
-  pgm.createTable("organizations", {
-    id: {
-      type: "uuid",
-      primaryKey: true,
-      default: pgm.func("uuid_generate_v4()")
+  pgm.addColumn("stock_movements", {
+    quantity_before: {
+      type: "integer",
+      notNull: false,
     },
-    name: {
-      type: "text", 
-      notNull: true,
-      unique: true
+    quantity_after: {
+      type: "integer",
+      notNull: false,
     },
-    created_at: {
-      type: "timestamptz",
-      notNull: true,
-      default: pgm.func("now()")
-    },
-
-    updated_at: {
-      type: "timestamptz",
-      notNull: true,
-      default: pgm.func("now()")
-    }
   })
 };
 
@@ -40,5 +27,6 @@ export const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 export const down = (pgm) => {
-  pgm.dropTable("organizations")
+  pgm.dropColumn("stock_movements", "quantity_before");
+  pgm.dropColumn("stock_movements", "quantity_after");
 };

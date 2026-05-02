@@ -13,4 +13,5 @@ router.post("/register", validate(registerSchema), registerUserController)
 router.post("/login", validate(loginSchema), loginUserController)
 router.post("/logout", logoutUserController)
 
+
 export default router

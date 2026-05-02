@@ -1,5 +1,5 @@
 import { getExecutor } from "../db/executor.js";
-import { qCreate }  from "../model/organization.model.js";
+import { qCreate }  from "../query/organization.query.js";
 
 export const organizationRepository = {
   async createOrganization(organizationName, db = null) {

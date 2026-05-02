@@ -42,6 +42,31 @@ export const qUpdateProduct = `
   RETURNING ${PRODUCTS_COLUMNS}
 `;
 
+export const qIncreaseProductQuantity = `
+  UPDATE products
+  SET quantity = quantity + $2,
+    updated_at = NOW()
+  WHERE id = $1
+  RETURNING *
+`;
+
+export const qDecreaseProductQuantity = `
+  UPDATE products
+  SET quantity = quantity - $2,
+      updated_at = NOW()
+  WHERE id = $1
+    AND quantity >= $2
+  RETURNING *
+`;
+
+export const qSetProductQuantity = `
+  UPDATE products
+  SET quantity = $2,
+      updated_at = NOW()
+  WHERE id = $1
+  RETURNING *
+`;
+
 export const qDeleteProduct = `
   DELETE FROM ${PRODUCTS_TABLE}
   WHERE id = $1
