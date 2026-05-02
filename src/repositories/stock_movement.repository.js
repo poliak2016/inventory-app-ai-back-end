@@ -1,20 +1,18 @@
 import { getExecutor } from "../db/executor.js";
 import { qCreateMovements } from "../query/stock_movements.query.js";
 
-export const createStockMovementRepository = async(data, db=null) =>{
-  
-  const executor = getExecutor(db)
+export const createStockMovementRepository = async (data, db = null) => {
+  const executor = getExecutor(db);
 
   const { rows } = await executor.query(qCreateMovements, [
-  data.productId,
-  data.organizationId,
-  data.createdBy,
-  data.type,
-  data.quantity,
-  data.quantityBefore,
-  data.quantityAfter,
-  data.note ?? null
-]);
+    data.productId,
+    data.createdBy,
+    data.type,
+    data.quantity,
+    data.quantityBefore,
+    data.quantityAfter,
+    data.note ?? null,
+  ]);
 
   return rows[0] ?? null;
-}
+};

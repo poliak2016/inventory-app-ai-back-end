@@ -17,7 +17,7 @@ app.use(requestLogger);
 app.use("/health", healthRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/auth", stock_movementRoutes)
+app.use("/api/stock/movements", stock_movementRoutes)
 
 
 app.use(errorMiddleware);

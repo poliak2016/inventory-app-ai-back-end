@@ -3,7 +3,6 @@ export const STOCK_MOVEMENTS_TABLE = "stock_movements";
 export const STOCK_MOVEMENTS_COLUMNS = `
   id,
   product_id,
-  organization_id,
   created_by,
   type,
   quantity,
@@ -15,8 +14,7 @@ export const STOCK_MOVEMENTS_COLUMNS = `
 
 export const qCreateMovements = `
 INSERT INTO ${STOCK_MOVEMENTS_TABLE} (
-  product_id, 
-  organization_id,
+  product_id,
   created_by,
   type,
   quantity,
@@ -24,6 +22,6 @@ INSERT INTO ${STOCK_MOVEMENTS_TABLE} (
   quantity_after,
   note
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING ${STOCK_MOVEMENTS_COLUMNS};
 `;

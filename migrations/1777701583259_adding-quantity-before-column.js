@@ -9,13 +9,16 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
-   pgm.dropConstraint("stock_movements", "stock_movements_type_check", {
-    ifExists: true,
-  });
-  
-   pgm.addConstraint("stock_movements", "stock_movements_type_check", {
-  check: "type IN ('in', 'out', 'adjustment')"
- })
+  pgm.addColumn("stock_movements", {
+    quantity_before: {
+      type: "integer",
+      notNull: false,
+    },
+    quantity_after: {
+      type: "integer",
+      notNull: false,
+    },
+  })
 };
 
 /**
@@ -24,7 +27,6 @@ export const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 export const down = (pgm) => {
-   pgm.dropConstraint("stock_movements", "stock_movements_type_check", {
-    ifExists: true,
-  });
+  pgm.dropColumn("stock_movements", "quantity_before");
+  pgm.dropColumn("stock_movements", "quantity_after");
 };

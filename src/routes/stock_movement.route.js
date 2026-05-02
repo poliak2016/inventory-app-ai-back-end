@@ -6,6 +6,7 @@ import { createStockMovementsController } from "../controllers/stock_movement.co
 
 const router = Router()
 
-router.post("/movements", authMiddleware, validate(createStockMovementSchema), createStockMovementsController)
+router.post("/", authMiddleware, validate(createStockMovementSchema), createStockMovementsController)
+
 
 export default router
