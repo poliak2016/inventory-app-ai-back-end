@@ -1,5 +1,5 @@
 import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
-import { createStockMovementService } from "../services/stock_movements.service.js";
+import { createStockMovementService, getMovementsByProductIdService } from "../services/stock_movements.service.js";
 
 export const createStockMovementsController = asyncHandler(async (req, res) => {
   const { productId, type, quantity, note } = req.body;
@@ -8,7 +8,7 @@ export const createStockMovementsController = asyncHandler(async (req, res) => {
     productId,
     type,
     quantity,
-    createdBy: req.user.id, 
+    createdBy: req.user.id,
     note,
   });
 
@@ -19,5 +19,20 @@ export const createStockMovementsController = asyncHandler(async (req, res) => {
     quantity: movement.quantity,
     note: movement.note,
     createdAt: movement.createdAt,
+  });
+});
+
+export const getMovementsByProductIdController = asyncHandler(async (req, res) => {
+  const { productId } = req.validated.params;
+  const { limit, offset } = req.validated.query;
+
+  const movements = await getMovementsByProductIdService({
+    productId,
+    limit,
+    offset,
+  });
+
+  return res.status(200).json({
+    data: movements,
   });
 });

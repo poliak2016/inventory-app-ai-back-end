@@ -9,6 +9,9 @@ export const validate = (schema, source = "body") => (req, _res, next) => {
     });
   }
 
-  req[source] = result.data;
+  req.validated = {
+    ...(req.validated ?? {}),
+    [source]: result.data,
+  };
   return next();
 };
