@@ -3,7 +3,8 @@ import { userRepository } from "../repositories/user.repository.js";
 import { organizationRepository } from "../repositories/organizations.repository.js";
 import { refreshTokenRepository } from "../repositories/token.repository.js";
 import { hashRefreshToken } from "../infrastructure/auth/helpers/tokenHash.js";
-import { AuthError, ConflictError } from "../errors/autorization/authErrors.js";
+import { NotFoundError, ConflictError } from "../errors/base.error.js";
+import { InvalidCredentialsError, TokenReuseDetectedError, InvalidTokenError } from "../errors/autorization/authErrors.js";
 import { signAccessToken, signRefreshToken } from "../infrastructure/auth/signJWT.js"; 
 import { verifyRefreshToken } from "../infrastructure/auth/verify-jwt-token.js";
 import { transactionFunc } from "../db/transaction.js";
@@ -52,11 +53,11 @@ export const registerUserService = async ({
 
   const user = await userRepository.findByEmail(email)
   if (!user){
-    throw new AuthError("Invalid email or password");
+    throw new InvalidCredentialsError();
   }
   const isValid = await comparePassword(password, user.passwordHash)
   if (!isValid) {
-    throw new AuthError("Invalid email or password");
+    throw new InvalidCredentialsError();
   }
     
     const accessToken =  signAccessToken({
@@ -90,7 +91,7 @@ export const registerUserService = async ({
 export const getMeService = async(userId) =>{
   const user = await userRepository.findById(userId);
   if(!user){
-    throw new AuthError("User not found")
+    throw new NotFoundError('User');
   }
   return user
 };
@@ -115,15 +116,15 @@ export const refreshUserService = async (refreshToken) => {
 
       if (any?.revoked_at) {
         await refreshTokenRepository.revokeByAllForUser(any.user_id, db);
-        throw new AuthError("Refresh token reuse detected");
+        throw new TokenReuseDetectedError();
       }
 
-      throw new AuthError("Invalid refresh token");
+      throw new InvalidTokenError();
     }
 
     if (valid.user_id !== payload.sub) {
       await refreshTokenRepository.revokeByAllForUser(valid.user_id, db);
-      throw new AuthError("Refresh token mismatch detected");
+      throw new InvalidTokenError("Refresh token mismatch detected");
     }
 
     await refreshTokenRepository.revokeById(valid.id, db);

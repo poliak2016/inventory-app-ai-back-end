@@ -1,4 +1,4 @@
-import { ValidationError, NotFoundError } from "../errors/products/productErrors.js";
+import { NotFoundError, ValidationError } from "../errors/base.error.js";
 import { productsRepository } from "../repositories/products.repository.js";
 import { CACHE_KEYS } from "../infrastructure/redis/cache.keys.js";
 import { getCache, setCache, delCache } from "../infrastructure/redis/cache.helper.js";
@@ -31,7 +31,7 @@ export const getProductId = async (id) => {
   const result = await productsRepository.findByID(id);
 
   if (!result) {
-    throw new NotFoundError("Product does not exist");
+    throw new NotFoundError("Product");
   }
 
   await setCache(key, result, TTL_SECONDS);
@@ -57,7 +57,7 @@ export const updateProduct = async (id, productData) => {
   const result = await productsRepository.update(id, productData);
 
   if (!result) {
-    throw new NotFoundError("Product not found");
+    throw new NotFoundError("Product");
   }
 
   await Promise.all([
@@ -76,7 +76,7 @@ export const deleteProduct = async (id) => {
   const result = await productsRepository.delete(id);
 
   if (result?.rowCount === 0) {
-    throw new NotFoundError("Product not found");
+    throw new NotFoundError("Product");
   }
 
   await Promise.all([

@@ -1,8 +1,8 @@
 import { transactionFunc } from "../db/transaction.js";
 import { productsRepository } from "../repositories/products.repository.js";
 import { stockMovementsRepository } from "../repositories/stock_movement.repository.js";
+import { NotFoundError } from "../errors/base.error.js";
 import {
-  StockMovementNotFoundError,
   InsufficientStockError,
   InvalidMovementTypeError,
 } from "../errors/stock-movements/stockMovementErrors.js";
@@ -14,7 +14,7 @@ export const createStockMovementService = async (data) => {
     const product = await productsRepository.findById(productId, db);
 
     if (!product) {
-      throw new StockMovementNotFoundError('Product');
+      throw new NotFoundError('Product');
     }
 
     const quantityBefore = product.quantity;
@@ -56,7 +56,7 @@ export const getMovementsByProductIdService = async (data) => {
   const product = await productsRepository.findById(productId);
 
   if (!product) {
-    throw new StockMovementNotFoundError('Product');
+    throw new NotFoundError('Product');
   }
 
   const limit = Math.min(Number(data.limit) || 20, 100);

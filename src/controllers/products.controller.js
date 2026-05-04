@@ -1,4 +1,4 @@
-import { NotFoundError, ValidationError } from "../errors/products/productErrors.js";
+import { NotFoundError, ValidationError } from "../errors/base.error.js";
 import {
    getAll,
    getProductId,
@@ -24,7 +24,7 @@ export const getProductById = asyncHandler(async (req, res) => {
   }
   const product = await getProductId(id);
   if(!product){
-    throw new NotFoundError()
+    throw new NotFoundError("Product")
  }
   res.status(200).json({
     status: "success",
@@ -47,11 +47,11 @@ export const createNewProduct = asyncHandler(async(req, res) => {
 export const updateProductData = asyncHandler(async (req, res) =>{
   const {id} = req.params
   if (!id) {
-    throw new ValidationError ("Product ID is required")
+    throw new ValidationError("Product ID is required")
   };
   const updated = await updateProduct(id, req.body);
   if (!updated) {
-    throw new NotFoundError ("Product")
+    throw new NotFoundError("Product")
   };
   res.status(200).json({
     status: "success",
@@ -62,11 +62,11 @@ export const updateProductData = asyncHandler(async (req, res) =>{
 export const deleteProductData = asyncHandler(async (req, res) =>{
   const {id} = req.params
   if (!id) {
-    throw new ValidationError ("Product ID is required")
+    throw new ValidationError("Product ID is required")
   };
   const deleted = await deleteProduct(id);
   if (!deleted) {
-    throw new NotFoundError ("Product")
+    throw new NotFoundError("Product")
   };
   res.status(204).json({
     status: "success",

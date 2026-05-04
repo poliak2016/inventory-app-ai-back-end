@@ -1,5 +1,5 @@
 import { env } from "../config/env.js";
-import { AuthError } from "../errors/autorization/authErrors.js";
+import { TokenMissingError } from "../errors/autorization/authErrors.js";
 import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
 import { registerUserService, loginUserService, getMeService, refreshUserService, logoutUserService } from "../services/auth.service.js";
 
@@ -59,7 +59,7 @@ export const refreshUserController = asyncHandler(async (req, res) => {
   const refreshTokenFromCookie = req.cookies?.refreshToken;
 
   if (!refreshTokenFromCookie) {
-    throw new AuthError("Refresh token missing");
+    throw new TokenMissingError();
   }
 
   const { accessToken, refreshToken: newRefreshToken } =
