@@ -4,15 +4,33 @@ import { organizationRepository } from "../repositories/organizations.repository
 import { refreshTokenRepository } from "../repositories/token.repository.js";
 import { hashRefreshToken } from "../infrastructure/auth/helpers/tokenHash.js";
 import { NotFoundError, ConflictError } from "../errors/base.error.js";
-import { InvalidCredentialsError, TokenReuseDetectedError, InvalidTokenError } from "../errors/autorization/authErrors.js";
-import { signAccessToken, signRefreshToken } from "../infrastructure/auth/signJWT.js"; 
+import {
+  InvalidCredentialsError,
+  TokenReuseDetectedError,
+  InvalidTokenError,
+} from "../errors/autorization/authErrors.js";
+import { signAccessToken, signRefreshToken } from "../infrastructure/auth/tokens.js";
 import { verifyRefreshToken } from "../infrastructure/auth/verify-jwt-token.js";
 import { transactionFunc } from "../db/transaction.js";
-import { expiresAt} from "../infrastructure/auth/helpers/refreshTokenExpiresAt.js";
-import {hashPassword, comparePassword} from "../infrastructure/auth/helpers/passwordHash.js";
+import { expiresAt } from "../infrastructure/auth/helpers/refreshTokenExpiresAt.js";
+import {
+  hashPassword,
+  comparePassword,
+} from "../infrastructure/auth/helpers/passwordHash.js";
 import { v4 as uuidv4 } from "uuid";
 
-// REGISTER USER 
+const buildAccessPayload = (user) => ({
+  sub: user.id,
+  email: user.email,
+  role: user.role,
+  organization_id: user.organization_id,
+});
+
+const buildRefreshPayload = (user) => ({
+  sub: user.id,
+});
+
+// REGISTER USER
 export const registerUserService = async ({
   name,
   email,
@@ -48,60 +66,56 @@ export const registerUserService = async ({
   });
 };
 
-// LOGIN USER 
-  export const loginUserService = async({password, email})=> {
+// LOGIN USER
+export const loginUserService = async ({ password, email }) => {
+  const user = await userRepository.findByEmail(email);
 
-  const user = await userRepository.findByEmail(email)
-  if (!user){
+  if (!user) {
     throw new InvalidCredentialsError();
   }
-  const isValid = await comparePassword(password, user.passwordHash)
+
+  const isValid = await comparePassword(password, user.passwordHash);
+
   if (!isValid) {
     throw new InvalidCredentialsError();
   }
-    
-    const accessToken =  signAccessToken({
-      sub: user.id,
-      email: user.email,
-      role: user.role
-    });
 
-    const refreshToken = signRefreshToken({
-      sub: user.id
-      });
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken(user);
+  const tokenHash = hashRefreshToken(refreshToken);
 
-    const tokenHash = hashRefreshToken(refreshToken);
+  return transactionFunc(async (db) => {
+    await refreshTokenRepository.createRefreshToken(
+      {
+        id: uuidv4(),
+        userId: user.id,
+        tokenHash,
+        expiresAt: expiresAt(),
+      },
+      db
+    );
 
-    return transactionFunc(async (db) => {
-      await refreshTokenRepository.createRefreshToken(
-        {
-          id: uuidv4(),
-          userId: user.id,
-          tokenHash: tokenHash,
-          expiresAt: expiresAt(),
-        },
-        db
-      );
-
-      return { accessToken, refreshToken };
-    });
-}
-
-//ME SERVICE
-export const getMeService = async(userId) =>{
-  const user = await userRepository.findById(userId);
-  if(!user){
-    throw new NotFoundError('User');
-  }
-  return user
+    return { accessToken, refreshToken };
+  });
 };
 
-export const logoutUserService = async(refreshToken) => {
- 
-    const tokenHash = hashRefreshToken(refreshToken)
-  await refreshTokenRepository.revokeByHash(tokenHash, pool)
+// ME SERVICE
+export const getMeService = async (userId) => {
+  const user = await userRepository.findById(userId);
+
+  if (!user) {
+    throw new NotFoundError("User");
   }
 
+  return user;
+};
+
+// LOGOUT USER
+export const logoutUserService = async (refreshToken) => {
+  const tokenHash = hashRefreshToken(refreshToken);
+
+  await refreshTokenRepository.revokeByHash(tokenHash, pool);
+};
 
 // REFRESH TOKEN / ROTATION
 export const refreshUserService = async (refreshToken) => {
@@ -109,7 +123,7 @@ export const refreshUserService = async (refreshToken) => {
   const tokenHash = hashRefreshToken(refreshToken);
 
   return transactionFunc(async (db) => {
-  const valid = await refreshTokenRepository.findValidByHash(tokenHash, db);
+    const valid = await refreshTokenRepository.findValidByHash(tokenHash, db);
 
     if (!valid) {
       const any = await refreshTokenRepository.findByHash(tokenHash, db);
@@ -129,8 +143,14 @@ export const refreshUserService = async (refreshToken) => {
 
     await refreshTokenRepository.revokeById(valid.id, db);
 
-    const newAccessToken = signAccessToken({ sub: valid.user_id });
-    const newRefreshToken = signRefreshToken({ sub: valid.user_id });
+    const user = await userRepository.findById(valid.user_id, db);
+
+    if (!user) {
+      throw new InvalidTokenError();
+    }
+
+    const newAccessToken = signAccessToken(buildAccessPayload(user));
+    const newRefreshToken = signRefreshToken(buildRefreshPayload(user));
 
     const newHash = hashRefreshToken(newRefreshToken);
 

@@ -10,6 +10,16 @@ export const CATEGORY_COLUMNS = `
 	updated_at AS "updatedAt"
 `;
 
+export const qCreateCategory = `
+INSERT INTO ${CATEGORY_TABLE} (
+  name,
+  organization_id,
+  created_by
+)
+VALUES ($1, $2, $3)
+RETURNING ${CATEGORY_COLUMNS}
+`
+
 export const qGetAll = `
 SELECT ${CATEGORY_COLUMNS}
 FROM ${CATEGORY_TABLE}

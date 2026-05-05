@@ -20,9 +20,9 @@ export const userRepository = {
     return rows[0] ?? null;
   },
 
-  async createUser({ name, email, passwordHash, role }, db = null) {
+  async createUser({ name, email, passwordHash, role, organization_id}, db = null) {
     const executor = getExecutor(db);
-    const { rows } = await executor.query(qCreate, [name, email, passwordHash, role]);
+    const { rows } = await executor.query(qCreate, [name, email, passwordHash, role, organization_id]);
     return rows[0] ?? null;
   }
 };
