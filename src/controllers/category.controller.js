@@ -7,7 +7,26 @@ export const categoryController = {
     return res.status(201).json({
       data: result 
     })
-  })
+  }),
+
+  update: asyncHandler(async (req, res) => {
+    const result = await categoryService.update(req.params.id, req.body, req.user);
+    return res.status(200).json({
+      data: result
+    });
+  }),
+
+  delete: asyncHandler(async (req, res) => {
+    await categoryService.delete(req.params.id, req.user);
+    return res.status(204).send();
+  }),
+
+  getAll: asyncHandler(async (req, res) => {
+    const result = await categoryService.getAll(req.user);
+    return res.status(200).json({
+      data: result
+    });
+  }),
 }
  
 

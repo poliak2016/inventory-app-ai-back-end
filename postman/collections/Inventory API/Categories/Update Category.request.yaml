@@ -1,0 +1,16 @@
+$kind: http-request
+name: Update Category
+method: PATCH
+url: '{{baseUrl}}/api/categories/{{categoryId}}'
+order: 1001
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{accessToken}}'
+body:
+  type: json
+  content: |-
+    {
+      "name": "Updated Beverages"
+    }

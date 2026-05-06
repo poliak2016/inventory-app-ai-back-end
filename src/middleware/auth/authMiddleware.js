@@ -11,7 +11,7 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     const payload = await verifyAccessToken(token);
-    console.log("ACCESS TOKEN PAYLOAD:", payload);
+  
 
     if (!payload.sub || !payload.organization_id) {
       throw new AuthError("Invalid token payload");
