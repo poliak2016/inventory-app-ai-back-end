@@ -21,7 +21,11 @@ export const authController = {
   register: asyncHandler(async (req, res) => {
     const { name, password, email, organizationName } = req.body;
 
-    const newUser = await registerUserService({ name, password, email, organizationName});
+    const newUser = await registerUserService({ 
+      name, 
+      password, 
+      email, 
+      organizationName});
 
     return res.status(201).json({
       data: {
@@ -29,7 +33,7 @@ export const authController = {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
-        organizationId: newUser.organizationId,
+        organizationId: newUser.organization_id,
       },
     });
   }),

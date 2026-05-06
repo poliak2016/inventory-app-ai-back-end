@@ -13,8 +13,8 @@ export const CATEGORY_COLUMNS = `
 export const qCreateCategory = `
 INSERT INTO ${CATEGORY_TABLE} (
   name,
-  organization_id,
-  created_by
+	slug,
+  organization_id
 )
 VALUES ($1, $2, $3)
 RETURNING ${CATEGORY_COLUMNS}
