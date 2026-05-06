@@ -6,6 +6,7 @@ import productRoutes from "./routes/product.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import stockMovementRoutes from "./routes/stock_movement.route.js";
 import categoryRoutes from "./routes/category.routes.js";
+import organizationRoutes from "./routes/organization.routes.js";
 
 import { errorMiddleware } from "./middleware/error/error.middleware.js";
 import { requestLogger } from "./middleware/logger/request-logger.middleware.js";
@@ -20,6 +21,7 @@ app.use("/health", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/organizations", organizationRoutes);
 app.use("/api/stock/movements", stockMovementRoutes);
 
 app.use(errorMiddleware);

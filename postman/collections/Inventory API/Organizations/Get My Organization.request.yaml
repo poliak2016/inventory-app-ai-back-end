@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get My Organization
+method: GET
+url: '{{baseUrl}}/api/organizations/me'
+order: 1000
+headers:
+  - key: Authorization
+    value: 'Bearer {{accessToken}}'
