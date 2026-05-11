@@ -27,11 +27,30 @@ export const createProductSchema = z.object({
 });
 
 export const validateIdSchema = (name = "id") => z.object({
-  [name]: z.string().uuid("Invaid ID format"),
-})
+  [name]: z.string({
+    required_error: "ID is required",
+    invalid_type_error: "ID must be a string",
+  }).uuid("Invalid ID format"),
+});
 
 export const updateProductSchema = z.object({
-  name: z.string().min(1).optional(),
-  price: z.coerce.number().positive().optional(),
-  quantity: z.coerce.number().int().nonnegative().optional(),
+  name: z
+    .string({
+      invalid_type_error: "Product name must be a string",
+    })
+    .min(1, "Product name cannot be empty")
+    .optional(),
+  price: z.coerce
+    .number({
+      invalid_type_error: "Price must be a number",
+    })
+    .positive("Price must be greater than 0")
+    .optional(),
+  quantity: z.coerce
+    .number({
+      invalid_type_error: "Quantity must be a number",
+    })
+    .int("Quantity must be an integer")
+    .nonnegative("Quantity cannot be negative")
+    .optional(),
 });

@@ -5,7 +5,7 @@ import {
   createStockMovementSchema,
   stockMovementParamsSchema,
   stockMovementHistoryQuerySchema,
-} from "../schemas/stock_movement.schema.js";
+} from "../validationSchemas/stock_movement.schema.js";
 import { stockMovementsController } from "../controllers/stock_movement.controller.js";
 
 const router = Router();

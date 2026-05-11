@@ -2,7 +2,7 @@ import { Router } from "express";
 import { productsController } from "../controllers/products.controller.js";
 import { validate } from "../middleware/validation/validate.middleware.js";
 import { requireRole } from "../middleware/auth/require-role.js";
-import { createProductSchema, updateProductSchema, validateIdSchema } from "../schemas/product.schema.js";
+import { createProductSchema, updateProductSchema, validateIdSchema } from "../validationSchemas/product.schema.js";
 import { authMiddleware } from "../middleware/auth/authMiddleware.js";
 
 const router = Router();

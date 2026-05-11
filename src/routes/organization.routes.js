@@ -3,7 +3,7 @@ import { organizationController } from "../controllers/organization.controller.j
 import { authMiddleware } from "../middleware/auth/authMiddleware.js";
 import { requireRole } from "../middleware/auth/require-role.js";
 import { validate } from "../middleware/validation/validate.middleware.js";
-import { updateOrganizationSchema } from "../schemas/organization.schema.js";
+import { updateOrganizationSchema } from "../validationSchemas/organization.schema.js";
 
 const router = Router();
 
