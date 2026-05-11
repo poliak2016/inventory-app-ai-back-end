@@ -1,13 +1,7 @@
 import { env } from "../config/env.js";
 import { TokenMissingError } from "../errors/autorization/authErrors.js";
 import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
-import {
-  registerUserService,
-  loginUserService,
-  getMeService,
-  refreshUserService,
-  logoutUserService,
-} from "../services/auth.service.js";
+import { authService } from "../services/auth.service.js";
 
 const COOKIE_OPTIONS = (env) => ({
   httpOnly: true,
@@ -21,11 +15,7 @@ export const authController = {
   register: asyncHandler(async (req, res) => {
     const { name, password, email, organizationName } = req.body;
 
-    const newUser = await registerUserService({ 
-      name, 
-      password, 
-      email, 
-      organizationName});
+    const newUser = await authService.register({ name, password, email, organizationName });
 
     return res.status(201).json({
       data: {
@@ -41,7 +31,7 @@ export const authController = {
   login: asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
-    const { accessToken, refreshToken } = await loginUserService({ email, password });
+    const { accessToken, refreshToken } = await authService.login({ email, password });
 
     res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS(env));
 
@@ -52,7 +42,7 @@ export const authController = {
   }),
 
   currentUser: asyncHandler(async (req, res) => {
-    const user = await getMeService(req.user.id);
+    const user = await authService.getMe(req.user.id);
 
     return res.status(200).json({
       status: "success",
@@ -68,7 +58,7 @@ export const authController = {
     }
 
     const { accessToken, refreshToken: newRefreshToken } =
-      await refreshUserService(refreshTokenFromCookie);
+      await authService.refresh(refreshTokenFromCookie);
 
     res.cookie("refreshToken", newRefreshToken, COOKIE_OPTIONS(env));
 
@@ -82,7 +72,7 @@ export const authController = {
     const refreshTokenFromCookie = req.cookies?.refreshToken;
 
     if (refreshTokenFromCookie) {
-      await logoutUserService(refreshTokenFromCookie);
+      await authService.logout(refreshTokenFromCookie);
     }
 
     res.clearCookie("refreshToken", {

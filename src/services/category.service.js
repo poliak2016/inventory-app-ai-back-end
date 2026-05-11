@@ -1,10 +1,12 @@
-import  slugify  from "slugify";
+import slugify from "slugify";
 import { NotFoundError, ValidationError } from "../errors/base.error.js";
 import { categoryRepository } from "../repositories/category.repository.js";
+import { getOrganizationId } from "../shared/auth/getOrganizationId.js";
 
 export const categoryService = {
   async create (data, user, db){
     const {name} = data;
+    const organization_id = getOrganizationId(user);
 
     if(!name || !name.trim()){
       throw new ValidationError("Category name is required")
@@ -18,13 +20,14 @@ export const categoryService = {
       {
         name: normalizedName, 
         slug,
-        organization_id: user.organization_id
+        organization_id,
       }, 
       db
     );
   },
 
   async update (id, data, user, db) {
+    const organization_id = getOrganizationId(user);
     const { name } = data;
     const normalizedName = name.trim();
     const slug = slugify(normalizedName, { lower: true, strict: true });
@@ -32,7 +35,7 @@ export const categoryService = {
     const result = await categoryRepository.update(
       id,
       { name: normalizedName, slug },
-      user.organization_id,
+      organization_id,
       db
     );
 
@@ -44,7 +47,8 @@ export const categoryService = {
   },
 
   async delete (id, user, db) {
-    const result = await categoryRepository.delete(id, user.organization_id, db);
+    const organization_id = getOrganizationId(user);
+    const result = await categoryRepository.delete(id, organization_id, db);
 
     if (!result) {
       throw new NotFoundError("Category");
@@ -54,6 +58,7 @@ export const categoryService = {
   },
 
   async getAll (user, db) {
-    return await categoryRepository.getAll(user.organization_id, db);
+    const organization_id = getOrganizationId(user);
+    return await categoryRepository.getAll(organization_id, db);
   }
 };

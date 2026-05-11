@@ -1,88 +1,110 @@
 import { NotFoundError, ValidationError } from "../errors/base.error.js";
 import { productsRepository } from "../repositories/products.repository.js";
+import { getOrganizationId } from "../shared/auth/getOrganizationId.js";
 import { CACHE_KEYS } from "../infrastructure/redis/cache.keys.js";
 import { getCache, setCache, delCache } from "../infrastructure/redis/cache.helper.js";
 
 const TTL_SECONDS = 60;
 
-export const getAll = async () => {
-  const key = CACHE_KEYS.PRODUCTS.ALL;
+export const productsService = {
+  getAll: async (user) => {
+    const organization_id = getOrganizationId(user);
 
-  const cached = await getCache(key);
-  if (cached) return cached;
+    const key = CACHE_KEYS.PRODUCTS.ALL(organization_id);
 
-  const result = await productsRepository.getAll();
+    const cached = await getCache(key);
+    if (cached) return cached;
 
-  await setCache(key, result, TTL_SECONDS);
-  return result;
-};
+    const result = await productsRepository.getAll(organization_id);
 
-export const getProductId = async (id) => {
+    await setCache(key, result, TTL_SECONDS);
+    return result;
+  },
 
-  if (!id) {
-  throw new ValidationError("Product id is required");
-}
+  getProductById: async (user, id) => {
+    const organization_id = getOrganizationId(user);
 
-  const key = CACHE_KEYS.PRODUCTS.BY_ID(id);
+    if (!id) {
+      throw new ValidationError("Product id is required");
+    }
 
-  const cached = await getCache(key);
-  if (cached) return cached;
+    const key = CACHE_KEYS.PRODUCTS.BY_ID(organization_id, id);
 
-  const result = await productsRepository.findByID(id);
+    const cached = await getCache(key);
+    if (cached) return cached;
 
-  if (!result) {
-    throw new NotFoundError("Product");
-  }
+    const result = await productsRepository.findById(organization_id, id);
 
-  await setCache(key, result, TTL_SECONDS);
-  return result;
-};
+    if (!result) {
+      throw new NotFoundError("Product");
+    }
 
-export const createProduct = async ({ name, price, quantity}) => {
-  
-  const result = await productsRepository.create({name, price, quantity});
+    await setCache(key, result, TTL_SECONDS);
+    return result;
+  },
 
-  await delCache(CACHE_KEYS.PRODUCTS.ALL);
-  return result;
-};
+  createProduct: async (user, { category_id, name, price, quantity }) => {
+    const organization_id = getOrganizationId(user);
 
-export const updateProduct = async (id, productData) => {
-  if (!id) {
-    throw new ValidationError("Product id is required");
-  }
-  if (!productData || Object.keys(productData).length === 0) {
-    throw new ValidationError("No fields provided for update");
-  }
+    const result = await productsRepository.create({
+      organization_id,
+      category_id,
+      name,
+      price,
+      quantity,
+    });
 
-  const result = await productsRepository.update(id, productData);
+    await delCache(CACHE_KEYS.PRODUCTS.ALL(organization_id));
+    return result;
+  },
 
-  if (!result) {
-    throw new NotFoundError("Product");
-  }
+  updateProduct: async (user, id, productData) => {
+    const organization_id = getOrganizationId(user);
 
-  await Promise.all([
-    delCache(CACHE_KEYS.PRODUCTS.ALL),
-    delCache(CACHE_KEYS.PRODUCTS.BY_ID(id)),
-  ]);
+    if (!id) {
+      throw new ValidationError("Product id is required");
+    }
 
-  return result;
-};
+    if (!productData || Object.keys(productData).length === 0) {
+      throw new ValidationError("No fields provided for update");
+    }
 
-export const deleteProduct = async (id) => {
-  if (!id) {
-    throw new ValidationError("Product ID is required");
-  }
+    const result = await productsRepository.update(
+      organization_id,
+      id,
+      productData
+    );
 
-  const result = await productsRepository.delete(id);
+    if (!result) {
+      throw new NotFoundError("Product");
+    }
 
-  if (result?.rowCount === 0) {
-    throw new NotFoundError("Product");
-  }
+    await Promise.all([
+      delCache(CACHE_KEYS.PRODUCTS.ALL(organization_id)),
+      delCache(CACHE_KEYS.PRODUCTS.BY_ID(organization_id, id)),
+    ]);
 
-  await Promise.all([
-    delCache(CACHE_KEYS.PRODUCTS.ALL),
-    delCache(CACHE_KEYS.PRODUCTS.BY_ID(id)),
-  ]);
+    return result;
+  },
 
-  return true;
+  deleteProduct: async (user, id) => {
+    const organization_id = getOrganizationId(user);
+
+    if (!id) {
+      throw new ValidationError("Product ID is required");
+    }
+
+    const result = await productsRepository.delete(organization_id, id);
+
+    if (!result) {
+      throw new NotFoundError("Product");
+    }
+
+    await Promise.all([
+      delCache(CACHE_KEYS.PRODUCTS.ALL(organization_id)),
+      delCache(CACHE_KEYS.PRODUCTS.BY_ID(organization_id, id)),
+    ]);
+
+    return true;
+  },
 };

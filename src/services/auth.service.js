@@ -30,143 +30,134 @@ const buildRefreshPayload = (user) => ({
   sub: user.id,
 });
 
-// REGISTER USER
-export const registerUserService = async ({
-  name,
-  email,
-  password,
-  organizationName
-}) => {
-  return transactionFunc(async (db) => {
-    const existingUser = await userRepository.findByEmail(email, db);
+export const authService = {
+  register: async ({ name, email, password, organizationName }) => {
+    return transactionFunc(async (db) => {
+      const existingUser = await userRepository.findByEmail(email, db);
 
-    if (existingUser) {
-      throw new ConflictError("User already exists");
-    }
-
-    const passwordHash = await hashPassword(password);
-
-    const organization = await organizationRepository.createOrganization(
-      organizationName,
-      db
-    );
-
-    const newUser = await userRepository.createUser(
-      {
-        name,
-        email,
-        passwordHash,
-        role: "admin",
-        organization_id: organization.id,
-      },
-      db
-    );
-
-    return newUser;
-  });
-};
-
-// LOGIN USER
-export const loginUserService = async ({ password, email }) => {
-  const user = await userRepository.findByEmail(email);
-
-  if (!user) {
-    throw new InvalidCredentialsError();
-  }
-
-  const isValid = await comparePassword(password, user.passwordHash);
-
-  if (!isValid) {
-    throw new InvalidCredentialsError();
-  }
-
-  const accessToken = signAccessToken(user);
-  const refreshToken = signRefreshToken(user);
-  const tokenHash = hashRefreshToken(refreshToken);
-
-  return transactionFunc(async (db) => {
-    await refreshTokenRepository.createRefreshToken(
-      {
-        id: uuidv4(),
-        userId: user.id,
-        tokenHash,
-        expiresAt: expiresAt(),
-      },
-      db
-    );
-
-    return { accessToken, refreshToken };
-  });
-};
-
-// ME SERVICE
-export const getMeService = async (userId) => {
-  const user = await userRepository.findById(userId);
-
-  if (!user) {
-    throw new NotFoundError("User");
-  }
-
-  return user;
-};
-
-// LOGOUT USER
-export const logoutUserService = async (refreshToken) => {
-  const tokenHash = hashRefreshToken(refreshToken);
-
-  await refreshTokenRepository.revokeByHash(tokenHash, pool);
-};
-
-// REFRESH TOKEN / ROTATION
-export const refreshUserService = async (refreshToken) => {
-  const payload = verifyRefreshToken(refreshToken);
-  const tokenHash = hashRefreshToken(refreshToken);
-
-  return transactionFunc(async (db) => {
-    const valid = await refreshTokenRepository.findValidByHash(tokenHash, db);
-
-    if (!valid) {
-      const any = await refreshTokenRepository.findByHash(tokenHash, db);
-
-      if (any?.revoked_at) {
-        await refreshTokenRepository.revokeByAllForUser(any.user_id, db);
-        throw new TokenReuseDetectedError();
+      if (existingUser) {
+        throw new ConflictError("User already exists");
       }
 
-      throw new InvalidTokenError();
-    }
+      const passwordHash = await hashPassword(password);
 
-    if (valid.user_id !== payload.sub) {
-      await refreshTokenRepository.revokeByAllForUser(valid.user_id, db);
-      throw new InvalidTokenError("Refresh token mismatch detected");
-    }
+      const organization = await organizationRepository.createOrganization(
+        organizationName,
+        db
+      );
 
-    await refreshTokenRepository.revokeById(valid.id, db);
+      const newUser = await userRepository.createUser(
+        {
+          name,
+          email,
+          passwordHash,
+          role: "admin",
+          organization_id: organization.id,
+        },
+        db
+      );
 
-    const user = await userRepository.findById(valid.user_id, db);
+      return newUser;
+    });
+  },
+
+  login: async ({ password, email }) => {
+    const user = await userRepository.findByEmail(email);
 
     if (!user) {
-      throw new InvalidTokenError();
+      throw new InvalidCredentialsError();
     }
 
-    const newAccessToken = signAccessToken(buildAccessPayload(user));
-    const newRefreshToken = signRefreshToken(buildRefreshPayload(user));
+    const isValid = await comparePassword(password, user.passwordHash);
 
-    const newHash = hashRefreshToken(newRefreshToken);
+    if (!isValid) {
+      throw new InvalidCredentialsError();
+    }
 
-    await refreshTokenRepository.createRefreshToken(
-      {
-        id: uuidv4(),
-        userId: valid.user_id,
-        tokenHash: newHash,
-        expiresAt: expiresAt(),
-      },
-      db
-    );
+    const accessToken = signAccessToken(user);
+    const refreshToken = signRefreshToken(user);
+    const tokenHash = hashRefreshToken(refreshToken);
 
-    return {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-    };
-  });
+    return transactionFunc(async (db) => {
+      await refreshTokenRepository.createRefreshToken(
+        {
+          id: uuidv4(),
+          userId: user.id,
+          tokenHash,
+          expiresAt: expiresAt(),
+        },
+        db
+      );
+
+      return { accessToken, refreshToken };
+    });
+  },
+
+  getMe: async (userId) => {
+    const user = await userRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundError("User");
+    }
+
+    return user;
+  },
+
+  logout: async (refreshToken) => {
+    const tokenHash = hashRefreshToken(refreshToken);
+    await refreshTokenRepository.revokeByHash(tokenHash, pool);
+  },
+
+  refresh: async (refreshToken) => {
+    const payload = verifyRefreshToken(refreshToken);
+    const tokenHash = hashRefreshToken(refreshToken);
+
+    return transactionFunc(async (db) => {
+      const valid = await refreshTokenRepository.findValidByHash(tokenHash, db);
+
+      if (!valid) {
+        const any = await refreshTokenRepository.findByHash(tokenHash, db);
+
+        if (any?.revoked_at) {
+          await refreshTokenRepository.revokeByAllForUser(any.user_id, db);
+          throw new TokenReuseDetectedError();
+        }
+
+        throw new InvalidTokenError();
+      }
+
+      if (valid.user_id !== payload.sub) {
+        await refreshTokenRepository.revokeByAllForUser(valid.user_id, db);
+        throw new InvalidTokenError("Refresh token mismatch detected");
+      }
+
+      await refreshTokenRepository.revokeById(valid.id, db);
+
+      const user = await userRepository.findById(valid.user_id, db);
+
+      if (!user) {
+        throw new InvalidTokenError();
+      }
+
+      const newAccessToken = signAccessToken(buildAccessPayload(user));
+      const newRefreshToken = signRefreshToken(buildRefreshPayload(user));
+
+      const newHash = hashRefreshToken(newRefreshToken);
+
+      await refreshTokenRepository.createRefreshToken(
+        {
+          id: uuidv4(),
+          userId: valid.user_id,
+          tokenHash: newHash,
+          expiresAt: expiresAt(),
+        },
+        db
+      );
+
+      return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      };
+    });
+  },
 };

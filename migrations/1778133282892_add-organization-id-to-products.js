@@ -9,21 +9,18 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
-  pgm.addColumn("categories", {
+
+  pgm.addColumn("products", {
     organization_id: {
       type: "uuid",
-      notNull: true,
-      references: "organizations(id)",
-      onDelete: "cascade",
-    },
-  });
-
-  pgm.createIndex("categories", ["organization_id"]);
-  pgm.createConstraint(
-    "categories",
-    "categories_organization_name_unique",
-    "UNIQUE (organization_id, name)"
-  );
+      references: "organization(id)",
+      onDelete: "CASCADE"
+      }
+    }),
+  
+  pgm.createIndex("products", "organization_id", {
+    name: "idx_products_organization_id",
+  })
 };
 
 /**
@@ -32,7 +29,9 @@ export const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 export const down = (pgm) => {
-  pgm.dropConstraint("categories", "categories_organization_name_unique");
-  pgm.dropIndex("categories", ["organization_id"]);
-  pgm.dropColumn("categories", "organization_id");
+   pgm.dropIndex("products", "organization_id", {
+    name: "idx_products_organization_id",
+  });
+
+  pgm.dropColumn("products", "organization_id");
 };

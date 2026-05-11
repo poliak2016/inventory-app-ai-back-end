@@ -6,10 +6,7 @@ import {
   stockMovementParamsSchema,
   stockMovementHistoryQuerySchema,
 } from "../schemas/stock_movement.schema.js";
-import {
-  createStockMovementsController,
-  getMovementsByProductIdController,
-} from "../controllers/stock_movement.controller.js";
+import { stockMovementsController } from "../controllers/stock_movement.controller.js";
 
 const router = Router();
 
@@ -17,7 +14,7 @@ router.post(
   "/",
   authMiddleware,
   validate(createStockMovementSchema),
-  createStockMovementsController
+  stockMovementsController.createStockMovement
 );
 
 router.get(
@@ -25,7 +22,7 @@ router.get(
   authMiddleware,
   validate(stockMovementParamsSchema, "params"),
   validate(stockMovementHistoryQuerySchema, "query"),
-  getMovementsByProductIdController
+  stockMovementsController.getMovementsByProductId
 );
 
 export default router;
