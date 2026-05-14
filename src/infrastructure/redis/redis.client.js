@@ -11,6 +11,9 @@ const noopRedis = {
   del: async () => 0,
   quit: async () => "OK",
   disconnect: async () => {},
+
+  isOpen: false,
+  isReady: false,
 };
 
 const isRedisEnabled = () =>

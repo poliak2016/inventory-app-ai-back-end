@@ -17,5 +17,4 @@ try {
   setupGracefulShutdown({ pool, server, redis });
 } catch (err) {
   logger.error({ err }, "Failed to start application");
-  
 }
