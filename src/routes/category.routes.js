@@ -3,6 +3,7 @@ import { categoryController } from "../controllers/category.controller.js";
 import { authMiddleware } from "../middleware/auth/authMiddleware.js";
 import { validate } from "../middleware/validation/validate.middleware.js";
 import { createCategorySchema, updateCategorySchema, categoryParamsSchema } from "../validationSchemas/category.schema.js";
+import { paginationSchema } from "../validationSchemas/pagination.schema.js";
 
 const router = Router();
 
@@ -31,6 +32,7 @@ router.delete(
 router.get(
   "/",
   authMiddleware,
+  validate(paginationSchema, "query"),
   categoryController.getAll
 );
 

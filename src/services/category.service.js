@@ -30,6 +30,10 @@ export const categoryService = {
     const organization_id = getOrganizationId(user);
     const { name } = data;
     const normalizedName = name.trim();
+
+    if (!normalizedName){
+      throw new ValidationError("Category name is required")
+    }
     const slug = slugify(normalizedName, { lower: true, strict: true });
 
     const result = await categoryRepository.update(
