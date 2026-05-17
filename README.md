@@ -76,10 +76,22 @@ Start (dev):
 npm run dev
 ```
 
-Run containerized dev stack:
+Run containerized dev stack (Postgres on host port `5433`, API on `3000`):
 
 ```bash
 npm run docker:dev
+```
+
+Stop dev stack and remove volumes:
+
+```bash
+npm run docker:dev:down
+```
+
+Run containerized production stack (Postgres + Redis + API; requires `.env.prod` and `.env.docker`):
+
+```bash
+npm run docker:prod
 ```
 
 Run tests (uses `.env.test`):

@@ -44,3 +44,6 @@ coverage/
 # OS
 $RECYCLE.BIN/
 .claude/settings.local.json
+.postman
+
+CHECKLIST.md
