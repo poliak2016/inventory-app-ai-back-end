@@ -50,6 +50,15 @@ export const authController = {
     });
   }),
 
+  getAllUsers: asyncHandler(async (req, res) => {
+    const users = await authService.getAllUsers(req.user, req.validated.query);
+
+    return res.status(200).json({
+      status: "success",
+      data: { users },
+    });
+  }),
+
   refresh: asyncHandler(async (req, res) => {
     const refreshTokenFromCookie = req.cookies?.refreshToken;
 

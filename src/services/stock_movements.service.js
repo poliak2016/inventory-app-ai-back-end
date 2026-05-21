@@ -1,4 +1,5 @@
 import { transactionFunc } from "../db/transaction.js";
+import { getOrganizationId } from "../shared/auth/getOrganizationId.js";
 import { productsRepository } from "../repositories/products.repository.js";
 import { stockMovementsRepository } from "../repositories/stock_movement.repository.js";
 import { NotFoundError } from "../errors/base.error.js";
@@ -9,11 +10,12 @@ import {
 
 export const stockMovementsService = {
   createStockMovement: async (data, user) => {
-    const { productId, type, quantity, note } = data;
+    const organizationId = getOrganizationId(user);
+    const {productId, type, quantity, note } = data;
     const createdBy = user.id;
 
     return await transactionFunc(async (db) => {
-      const product = await productsRepository.findById(productId, db);
+      const product = await productsRepository.findById(organizationId, productId, db);
 
       if (!product) {
         throw new NotFoundError('Product');
@@ -23,14 +25,14 @@ export const stockMovementsService = {
       let updatedProduct;
 
       if (type === "in") {
-        updatedProduct = await productsRepository.increaseQuantity(productId, quantity, db);
+        updatedProduct = await productsRepository.increaseQuantity(organizationId, productId, quantity, db);
       } else if (type === "out") {
         if (product.quantity < quantity) {
           throw new InsufficientStockError();
         }
-        updatedProduct = await productsRepository.decreaseQuantity(productId, quantity, db);
+        updatedProduct = await productsRepository.decreaseQuantity(organizationId, productId, quantity, db);
       } else if (type === "adjustment") {
-        updatedProduct = await productsRepository.setQuantity(productId, quantity, db);
+        updatedProduct = await productsRepository.setQuantity(organizationId, productId, quantity, db);
       } else {
         throw new InvalidMovementTypeError();
       }
@@ -52,10 +54,11 @@ export const stockMovementsService = {
     });
   },
 
-  getMovementsByProductId: async (data) => {
+  getMovementsByProductId: async (data, user) => {
+    const organizationId = getOrganizationId(user);
     const { productId } = data;
 
-    const product = await productsRepository.findById(productId);
+    const product = await productsRepository.findById(organizationId, productId);
 
     if (!product) {
       throw new NotFoundError('Product');
@@ -65,6 +68,7 @@ export const stockMovementsService = {
     const offset = Math.max(Number(data.offset) || 0, 0);
 
     return await stockMovementsRepository.findByProductId({
+      organizationId,
       productId,
       limit,
       offset,

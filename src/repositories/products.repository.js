@@ -12,9 +12,9 @@ import {
 } from "../query/products.query.js";
 
 export const productsRepository = {
-  async getAll(organization_id, db = null) {
+  async getAll(organization_id, limit = 20, offset = 0, db = null) {
     const executor = getExecutor(db);
-    const { rows } = await executor.query(qGetAll, [organization_id]);
+    const { rows } = await executor.query(qGetAll, [organization_id, limit, offset]);
     return rows;
   },
 

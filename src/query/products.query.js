@@ -16,6 +16,8 @@ export const qGetAll = `
   FROM ${PRODUCTS_TABLE}
   WHERE organization_id = $1
   ORDER BY created_at DESC
+  LIMIT $2
+  OFFSET $3
 `;
 
 export const qFindProductById = `

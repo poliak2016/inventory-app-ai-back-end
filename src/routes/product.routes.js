@@ -17,7 +17,7 @@ router.get(
 router.get(
   "/:id", 
   authMiddleware, 
-  validate(validateIdSchema, "params"), 
+  validate(validateIdSchema(), "params"),
   productsController.getProductById
 );
 router.post(
@@ -28,15 +28,15 @@ router.post(
 );
 router.put(
   "/:id", authMiddleware, 
-  validate(validateIdSchema(), "params"), 
-  validate(updateProductSchema, "body"), 
+  validate(validateIdSchema(), "params"),
+  validate(updateProductSchema, "body"),
   productsController.updateProduct
 );
 router.delete(
   "/:id", 
   authMiddleware, 
   requireRole("admin"), 
-  validate(validateIdSchema(), "params"), 
+  validate(validateIdSchema(), "params"),
   productsController.deleteProduct
 );
 

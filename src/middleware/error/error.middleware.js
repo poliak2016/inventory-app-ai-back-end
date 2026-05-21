@@ -1,5 +1,5 @@
 import { logger } from "../../config/logger.js";
-import { ZodError } from "zod";
+import { ValidationError } from "../../errors/base.error.js";
 
 const sanitizeBody = (body) => {
   if (!body || typeof body !== "object") return body;
@@ -28,25 +28,31 @@ export const errorMiddleware = (err, req, res, next) => {
     body: sanitizeBody(req.body),
   };
 
+  
 
-  if (err instanceof ZodError) {
-    const issues = err.issues.map((issue) => ({
+  if (err instanceof ValidationError) {
+    const logIssues = err.details.issues.map((issue) => ({
       path: issue.path.join("."),
       message: issue.message,
       code: issue.code,
     }));
 
+    const clientError = err.details.issues.map((issue) =>({
+      field: issue.path.join("."),
+      message: issue.message
+    }))
+
     logger.warn("Validation failed", {
       ...requestContext,
       status: 400,
-      issues,
+      logIssues,
     });
 
     return res.status(400).json({
       status: "error",
       message: "Validation error",
       requestId,
-      issues,
+      errors: clientError
     });
   }
 

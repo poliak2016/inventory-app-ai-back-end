@@ -29,6 +29,7 @@ export const categoryService = {
   async update (id, data, user, db) {
     const organization_id = getOrganizationId(user);
     const { name } = data;
+
     const normalizedName = name.trim();
 
     if (!normalizedName){
@@ -61,8 +62,8 @@ export const categoryService = {
     return result;
   },
 
-  async getAll (user, db) {
+  async getAll (user, { limit, offset}) {
     const organization_id = getOrganizationId(user);
-    return await categoryRepository.getAll(organization_id, db);
+    return await categoryRepository.getAll(organization_id, limit, offset);
   }
-};
+};  

@@ -3,25 +3,25 @@ import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
 
 export const productsController = {
   getProducts: asyncHandler(async (req, res) => {
-    const products = await productsService.getAll(req.user);
-    res.status(200).json({
+    const products = await productsService.getAll(req.user, req.query.page, req.query.limit);
+    return res.status(200).json({
       status: "success",
-      data: products,
+      data: { products },
     });
   }),
 
   getProductById: asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.validated.params;
     const product = await productsService.getProductById(req.user, id);
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       data: product,
     });
   }),
 
   createProduct: asyncHandler(async (req, res) => {
-    const { name, price, quantity } = req.body;
-    const newProduct = await productsService.createProduct(req.user, { name, price, quantity });
+    const { name, price, quantity, categoryId } = req.validated.body;
+    const newProduct = await productsService.createProduct(req.user, { name, price, quantity, categoryId });
     res.status(201).json({
       status: "success",
       data: newProduct,
@@ -29,8 +29,8 @@ export const productsController = {
   }),
 
   updateProduct: asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const updated = await productsService.updateProduct(req.user, id, req.body);
+    const { id } = req.validated.params;
+    const updated = await productsService.updateProduct(req.user, id, req.validated.body);
     res.status(200).json({
       status: "success",
       data: updated,
@@ -38,7 +38,7 @@ export const productsController = {
   }),
 
   deleteProduct: asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.validated.params;
     await productsService.deleteProduct(req.user, id);
     res.status(204).json({
       status: "success",

@@ -11,7 +11,7 @@ import organizationRoutes from "./routes/organization.routes.js";
 import { errorMiddleware } from "./middleware/error/error.middleware.js";
 import { requestLogger } from "./middleware/logger/request-logger.middleware.js";
 import { requestId } from "./middleware/api/requestId.middleware.js";
-// import { rateLimitMiddleware } from "./middleware/api/rate-limit.middleware.js";
+import { rateLimitMiddleware } from "./middleware/api/rate-limit.middleware.js";
 
 import { corsMiddleware } from "./config/cors.js";
 
@@ -20,7 +20,7 @@ const app = express();
 app.use(corsMiddleware);
 app.use(requestId);
 
-// app.use(rateLimitMiddleware);
+app.use(rateLimitMiddleware);
 
 app.use(express.json());
 app.use(cookieParser());

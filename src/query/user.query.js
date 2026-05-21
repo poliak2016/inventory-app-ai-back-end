@@ -43,3 +43,12 @@ export const qCreate = `
   VALUES ($1, $2, $3, $4, $5)
   RETURNING ${USER_COLUMNS}
 `;
+
+export const qGetAll = `
+  SELECT ${USER_COLUMNS}
+  FROM ${USER_TABLE}
+  WHERE organization_id = $1
+  ORDER BY created_at DESC
+  LIMIT $2
+  OFFSET $3
+`;
