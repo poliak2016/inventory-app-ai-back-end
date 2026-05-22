@@ -90,3 +90,9 @@ export const qDeleteProduct = `
     AND id = $2
   RETURNING ${PRODUCTS_COLUMNS}
 `;
+
+export const qCountProducts = `
+  SELECT COUNT(*) 
+  FROM ${PRODUCTS_TABLE}
+  WHERE organization_id = $1
+`

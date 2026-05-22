@@ -28,9 +28,18 @@ RETURNING ${STOCK_MOVEMENTS_COLUMNS};
 
 export const qGetMovementsByProductId = `
 SELECT
-  ${STOCK_MOVEMENTS_COLUMNS}
-FROM ${STOCK_MOVEMENTS_TABLE}
-WHERE product_id = $1
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
+  sm.id,
+  sm.product_id,
+  sm.created_by,
+  sm.type,
+  sm.quantity,
+  sm.quantity_before,
+  sm.quantity_after,
+  sm.note,
+  sm.created_at
+FROM stock_movements sm
+JOIN products p ON sm.product_id = p.id
+WHERE sm.product_id = $1 AND p.organization_id = $2
+ORDER BY sm.created_at DESC
+LIMIT $3 OFFSET $4;
 `;

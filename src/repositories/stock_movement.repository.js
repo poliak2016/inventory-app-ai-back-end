@@ -18,11 +18,12 @@ export const stockMovementsRepository = {
     return rows[0] ?? null;
   },
 
-  findByProductId: async ({ productId, limit = 20, offset = 0 }, db = null) => {
+  findByProductId: async ({ productId, organizationId, limit = 20, offset = 0 }, db = null) => {
     const executor = getExecutor(db);
 
     const { rows } = await executor.query(qGetMovementsByProductId, [
       productId,
+      organizationId,
       limit,
       offset,
     ]);

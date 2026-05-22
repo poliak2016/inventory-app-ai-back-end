@@ -9,13 +9,21 @@ import {
   qDecreaseProductQuantity,
   qSetProductQuantity,
   qGetAll,
+  qCountProducts,
 } from "../query/products.query.js";
 
 export const productsRepository = {
   async getAll(organization_id, limit = 20, offset = 0, db = null) {
     const executor = getExecutor(db);
-    const { rows } = await executor.query(qGetAll, [organization_id, limit, offset]);
-    return rows;
+    const [ result, countResult ] = await Promise.all([
+      executor.query(qGetAll, [organization_id, limit, offset]),
+      executor.query(qCountProducts, [organization_id])
+    ]);
+
+    const rows = result.rows;
+    const total = parseInt(countResult.rows[0].count);
+
+    return { rows, total };
   },
 
   async findById(organization_id, id, db = null) {

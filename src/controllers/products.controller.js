@@ -3,10 +3,10 @@ import { asyncHandler } from "../middleware/api/async-handler.middleware.js";
 
 export const productsController = {
   getProducts: asyncHandler(async (req, res) => {
-    const products = await productsService.getAll(req.user, req.query.page, req.query.limit);
+    const { products, pagination } = await productsService.getAll(req.user, req.validated.query);
     return res.status(200).json({
       status: "success",
-      data: { products },
+      data: { products, pagination },
     });
   }),
 

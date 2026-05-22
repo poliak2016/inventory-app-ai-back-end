@@ -7,15 +7,29 @@ import { getCache, setCache, delCache } from "../infrastructure/redis/cache.help
 const TTL_SECONDS = 60;
 
 export const productsService = {
-  getAll: async (user, { limit, offset}) => {
+  getAll: async (user, { limit, page }) => {
     const organization_id = getOrganizationId(user);
 
-    const key = CACHE_KEYS.PRODUCTS.ALL(organization_id, limit, offset);
+    const offset = ( page - 1 ) * limit
+
+    const key = CACHE_KEYS.PRODUCTS.ALL(organization_id, limit, page);
 
     const cached = await getCache(key);
     if (cached) return cached;
 
-    const result = await productsRepository.getAll(organization_id, limit, offset);
+    const { rows, total } = await productsRepository.getAll(organization_id, limit, offset);
+
+    const hasMore = offset + limit < total;
+
+    const result = {
+      products: rows,
+      pagination: {
+        total,
+        page,
+        limit,
+        hasMore
+      }
+    }
 
     await setCache(key, result, TTL_SECONDS);
     return result;

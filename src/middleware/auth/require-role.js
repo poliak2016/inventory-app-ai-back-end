@@ -3,12 +3,12 @@ import { AuthError, ForbiddenError} from "../../errors/autorization/authErrors.j
 export const requireRole = (role) => { 
   return (req,res, next) =>{
     if(!req.user){
-      throw new AuthError("Authentication required");
+      return next(new AuthError("Authentication required"));
     };
 
     if(req.user.role !== role){ 
-      throw new ForbiddenError("Access denied")
+     return next(new ForbiddenError("Access denied"));
    };
-    next()
+   next()
   };
 };
