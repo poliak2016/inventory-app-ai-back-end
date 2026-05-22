@@ -23,11 +23,13 @@ router.get(
 router.post(
   "/", 
   authMiddleware, 
+  requireRole("admin"),
   validate(createProductSchema, "body"), 
   productsController.createProduct
 );
 router.put(
   "/:id", authMiddleware, 
+  requireRole("admin"),
   validate(validateIdSchema(), "params"),
   validate(updateProductSchema, "body"),
   productsController.updateProduct
