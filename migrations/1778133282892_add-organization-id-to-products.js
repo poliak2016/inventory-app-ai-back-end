@@ -9,17 +9,14 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
+  pgm.sql(`
+    ALTER TABLE products
+      ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+  `);
 
-  pgm.addColumn("products", {
-    organization_id: {
-      type: "uuid",
-      references: "organization(id)",
-      onDelete: "CASCADE"
-      }
-    }),
-  
   pgm.createIndex("products", "organization_id", {
     name: "idx_products_organization_id",
+    ifNotExists: true,
   })
 };
 

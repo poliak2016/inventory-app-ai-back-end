@@ -1,5 +1,5 @@
 import { api } from "../../setup/testClient.js";
-import { newUser } from "../../setup/factory.js";
+import { newUser } from "../../fixtures/user.fixture.js";
 
 describe("Auth /api/auth/login", () => {
   it("Should login and access user profile", async () => {

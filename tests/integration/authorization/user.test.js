@@ -1,5 +1,6 @@
 import { api } from "../../setup/testClient.js";
-import {newProduct, newUser} from "../../setup/factory.js"
+import { newUser } from "../../fixtures/user.fixture.js";
+import { newProduct } from "../../fixtures/product.fixture.js";
 import { query } from "../../../src/db/query.js";
 
 describe("Auth /api/auth/user", ()=>{
