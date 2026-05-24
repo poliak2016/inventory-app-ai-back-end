@@ -48,11 +48,6 @@ describe("Auth /api/auth/user", ()=>{
   it("Should block non-admin user (403)", async()=>{
 
     await api.post("/api/auth/register").send(newUser);
-    
-    await query(`
-      UPDATE users SET role = $1 WHERE email = $2`,
-      ["staff", newUser.email]
-      )
 
     const resLogin = await api.post("/api/auth/login").send({
       email: newUser.email,
@@ -64,13 +59,25 @@ describe("Auth /api/auth/user", ()=>{
     const token = resLogin.body.accessToken
     expect(token).toBeDefined();
 
-    const product = await api.post("/api/products").send(newProduct);
+    const product = await api.post("/api/products").set("Authorization", `Bearer ${token}`).send(newProduct);
     expect(product.statusCode).toBe(201);
 
     const productID = product.body.data.id;
     expect(productID).toBeDefined();
 
-    const res = await api.delete(`/api/products/${productID}`).set("Authorization", `Bearer ${token}`)
+    await query(`
+      UPDATE users SET role = $1 WHERE email = $2`,
+      ["staff", newUser.email]
+      );
+
+      const resLoginStaff = await api.post("/api/auth/login").send({
+      email: newUser.email,
+      password: newUser.password
+    });
+
+    const staffToken = resLoginStaff.body.accessToken
+
+    const res = await api.delete(`/api/products/${productID}`).set("Authorization", `Bearer ${staffToken}`)
 
     expect(res.statusCode).toBe(403)
   });
