@@ -53,4 +53,10 @@ export const updateProductSchema = z.object({
     .int("Quantity must be an integer")
     .nonnegative("Quantity cannot be negative")
     .optional(),
+  categoryId: z
+    .string({
+      invalid_type_error: "Category ID must be a string",
+    })
+    .uuid("Category ID must be a valid UUID")
+    .optional(),
 });

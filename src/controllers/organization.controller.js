@@ -10,7 +10,7 @@ export const organizationController = {
   }),
 
   updateMe: asyncHandler(async (req, res) => {
-    const result = await organizationService.updateMyOrganization(req.body.name, req.user);
+    const result = await organizationService.updateMyOrganization(req.validated.body.name, req.user);
     return res.status(200).json({
       data: result,
     });

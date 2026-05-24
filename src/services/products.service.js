@@ -57,12 +57,12 @@ export const productsService = {
     return result;
   },
 
-  createProduct: async (user, { category_id, name, price, quantity }) => {
+  createProduct: async (user, { categoryId, name, price, quantity }) => {
     const organization_id = getOrganizationId(user);
 
     const result = await productsRepository.create({
       organization_id,
-      category_id,
+      category_id: categoryId ?? null,
       name,
       price,
       quantity,
@@ -83,10 +83,11 @@ export const productsService = {
       throw new ValidationError("No fields provided for update");
     }
 
+    const { categoryId, ...rest } = productData;
     const result = await productsRepository.update(
       organization_id,
       id,
-      productData
+      { ...rest, category_id: categoryId ?? null }
     );
 
     if (!result) {
