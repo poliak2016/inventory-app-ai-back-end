@@ -4,6 +4,23 @@ import { createAdmin } from "../../helpers/auth.helper.js";
 import { newProduct } from "../../fixtures/product.fixture.js";
 
 describe("products API (integration)", () => {
+  it("GET /api/products/:id — org B cannot access org A product → 404", async () =>{
+    const tokenA = await createAdmin();
+
+    const product = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${tokenA}`)
+      .send(newProduct);
+
+    const tokenB = await createAdmin();
+    const productId = product.body.data.id;
+
+    const res = await api
+      .get(`/api/products/${ productId }`)
+      .set("Authorization", `Bearer ${tokenB}`)
+
+    expect(res.statusCode).toBe(404)
+  })
 
   it("POST /api/products — admin creates product → 201", async () => {
     const token = await createAdmin();
