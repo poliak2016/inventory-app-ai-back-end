@@ -20,10 +20,28 @@ describe("products API (integration)", () => {
       .set("Authorization", `Bearer ${tokenB}`)
 
     expect(res.statusCode).toBe(404)
-  })
+  });
+
+  it("POST/api/products — org B cannot open list of products org A → 200", async () => {
+    const tokenA = await createAdmin();
+
+    await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${tokenA}`)
+      .send(newProduct);
+
+    const tokenB = await createAdmin();
+
+    const res = await api
+      .get("/api/products")
+      .set("Authorization", `Bearer ${tokenB}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.data.products).toEqual([]);
+  });
 
   it("POST /api/products — admin creates product → 201", async () => {
-    const token = await createAdmin();
+     const token = await createAdmin();
 
     const res = await api
       .post("/api/products")
