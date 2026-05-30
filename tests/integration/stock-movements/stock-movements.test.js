@@ -46,4 +46,26 @@ describe("Stock movements flow test", () => {
 
     expect(res.statusCode).toBe(422);
   });
+
+  it("GET/api/stock/movements/:productId/history - product history movements -> 200", async () => {
+    const admin = await createAdmin();
+
+    const product = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${admin}`)
+      .send(newProduct);
+
+    const productId = product.body.data.id;
+
+    await api
+      .post("/api/stock/movements")
+      .set("Authorization", `Bearer ${admin}`)
+      .send({ type: "out", quantity: newProduct.quantity, productId });
+
+    const res = await api 
+      .get(`/api/stock/movements/${productId}/history`)
+      .set("Authorization", `Bearer ${admin}`)
+
+    expect(res.statusCode).toBe(200)
+  });
 });
