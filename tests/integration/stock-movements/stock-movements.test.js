@@ -28,4 +28,22 @@ describe("Stock movements flow test", () => {
 
     expect(newProductData.body.data.quantity).toEqual(newProduct.quantity + newStockMovement.quantity)
   });
+
+  it("POST/api/stock/movement -- out movement exceeds stock -> 422", async() =>{
+    const admin = await createAdmin();
+
+    const product = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${admin}`)
+      .send(newProduct);
+
+    const productId = product.body.data.id;
+
+    const res = await api
+      .post("/api/stock/movements")
+      .set("Authorization", `Bearer ${admin}`)
+      .send({ type: "out", quantity: newProduct.quantity + 1, productId });
+
+    expect(res.statusCode).toBe(422);
+  });
 });
