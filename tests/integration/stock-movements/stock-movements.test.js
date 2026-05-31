@@ -62,10 +62,21 @@ describe("Stock movements flow test", () => {
       .set("Authorization", `Bearer ${admin}`)
       .send({ type: "out", quantity: newProduct.quantity, productId });
 
-    const res = await api 
+    const res = await api
       .get(`/api/stock/movements/${productId}/history`)
       .set("Authorization", `Bearer ${admin}`)
 
     expect(res.statusCode).toBe(200)
+  });
+
+  it("POST/api/stock/movements - invalid productId (not UUID) -> 400", async () => {
+    const admin = await createAdmin();
+
+    const res = await api
+      .post("/api/stock/movements")
+      .set("Authorization", `Bearer ${admin}`)
+      .send({ ...newStockMovement, productId: "not-a-uuid" })
+
+    expect(res.statusCode).toBe(400)
   });
 });

@@ -22,5 +22,23 @@ describe("Organization flow tests", () => {
 
     expect(res.statusCode).toBe(200)
   });
+
+  it("GET/api/organizations/me - without token -> 401", async () => {
+    const res = await api
+      .get("/api/organizations/me")
+
+    expect(res.statusCode).toBe(401)
+  });
+
+  it("PATCH/api/organizations/me - empty name -> 400", async () => {
+    const token = await createAdmin()
+
+    const res = await api
+      .patch("/api/organizations/me")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ name: "" })
+
+    expect(res.statusCode).toBe(400)
+  });
 });
 

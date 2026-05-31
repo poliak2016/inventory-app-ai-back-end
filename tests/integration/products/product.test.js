@@ -1,6 +1,6 @@
 /* eslint-env jest */
 import { api } from "../../setup/testClient.js";
-import { createAdmin } from "../../helpers/auth.helper.js";
+import { createAdmin, createStaff } from "../../helpers/auth.helper.js";
 import { newProduct } from "../../fixtures/product.fixture.js";
 
 describe("products API (integration)", () => {
@@ -128,4 +128,48 @@ describe("products API (integration)", () => {
     expect(res.statusCode).toBe(204);
     expect(res.body).toEqual({});
   });
-});
+
+  it("GET/api/products - getting products without token -> 401", async () => {
+    const res = await api
+      .get("/api/products")
+
+    expect(res.statusCode).toBe(401)
+  });
+
+  it("POST/api/products - missed argument -> 400", async () => {
+    const token = await createAdmin();
+
+    const res = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send({name: "test product"})
+
+    expect(res.statusCode).toBe(400)
+  });
+
+  it("POST/api/products - negative price -> 400", async () => {
+    const token = await createAdmin();
+
+    const res = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "test product",
+        price: -1,
+        quantity: 10
+        });
+
+    expect(res.statusCode).toBe(400)
+  });
+
+  it("POST/api/products - staff tries to create product -> 403", async () => {
+    const token = await createStaff();
+
+    const res = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newProduct);
+
+    expect(res.statusCode).toBe(403)
+  });
+})

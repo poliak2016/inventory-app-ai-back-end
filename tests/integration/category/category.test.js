@@ -58,13 +58,31 @@ describe("categories API (integration)", () => {
       .post("/api/categories")
       .set("Authorization", `Bearer ${admin}`)
       .send(newCategory);
-    
+
     const id = category.body.data.id;
-    
+
     const res = await api
       .delete(`/api/categories/${id}`)
       .set("Authorization", `Bearer ${admin}`)
 
     expect(res.statusCode).toBe(204)
+  });
+
+  it("GET/api/categories - getting categories without token -> 401", async () => {
+    const res = await api
+      .get("/api/categories")
+
+    expect(res.statusCode).toBe(401)
+  });
+
+  it("PATCH/api/categories/:id - invalid UUID param -> 400", async () => {
+    const admin = await createAdmin();
+
+    const res = await api
+      .patch("/api/categories/not-a-uuid")
+      .set("Authorization", `Bearer ${admin}`)
+      .send({ name: "New name" })
+
+    expect(res.statusCode).toBe(400)
   });
 });

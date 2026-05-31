@@ -12,4 +12,6 @@ export const cleanDB = async() => {
       END LOOP;
     END$$;
     `)
-}
+};
+
+

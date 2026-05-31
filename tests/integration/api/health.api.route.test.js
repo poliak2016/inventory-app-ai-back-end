@@ -1,10 +1,8 @@
-import request from "supertest";
-import app from "../../src/app.js";
-
+import { api } from "../../setup/testClient.js";
 
 describe("health check api", () => {
   it("should return status 200 and status OK", async () => {
-    const res = await request(app).get("/api/health");
+    const res = await api.get("/api/health");
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("status", "OK");
