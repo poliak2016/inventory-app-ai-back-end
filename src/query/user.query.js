@@ -6,6 +6,7 @@ export const USER_COLUMNS = `
   id,
   email,
   role,
+  organization_id,
   name,
   created_at AS "createdAt",
   updated_at AS "updatedAt"
@@ -38,7 +39,16 @@ export const qFindByEmail = `
 `;
 
 export const qCreate = `
-  INSERT INTO ${USER_TABLE} (name, email, password_hash, role)
-  VALUES ($1, $2, $3, $4)
+  INSERT INTO ${USER_TABLE} (name, email, password_hash, role, organization_id)
+  VALUES ($1, $2, $3, $4, $5)
   RETURNING ${USER_COLUMNS}
+`;
+
+export const qGetAll = `
+  SELECT ${USER_COLUMNS}
+  FROM ${USER_TABLE}
+  WHERE organization_id = $1
+  ORDER BY created_at DESC
+  LIMIT $2
+  OFFSET $3
 `;

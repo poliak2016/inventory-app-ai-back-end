@@ -1,10 +1,14 @@
 $kind: http-request
+name: Create Product
 method: POST
-url: '{{baseUrl}}/api/products'
+url: "{{baseUrl}}/api/products"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhOWMxMDg3ZC0yMDA0LTQxMzktYTk1OC1iODc2YTRlOGNlM2MiLCJlbWFpbCI6InVzZXJAZXhhbXBsZXMuY29tIiwicm9sZSI6ImFkbWluIiwib3JnYW5pemF0aW9uX2lkIjoiZWE5YjI0ZjYtMmMzOC00OWI5LWIyNTgtZjI0MGY1N2M2Y2JiIiwiaWF0IjoxNzc4NDc5NzIwLCJleHAiOjE3Nzg0ODA2MjB9.-sgURD9Bt9k7wlNefuH4lEHVOfiNmAoVDgUE5zTGhGg
 order: 3000
 headers:
-  - key: Content-Type
-    value: application/json
+  Content-Type: application/json
 body:
   type: json
   content: |-

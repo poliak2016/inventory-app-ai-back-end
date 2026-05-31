@@ -1,0 +1,5 @@
+$kind: collection
+description: Full API flow for the Quiz Builder backend.
+variables:
+  baseUrl: http://localhost:3000
+  quizId: ""

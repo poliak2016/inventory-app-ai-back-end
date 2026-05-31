@@ -1,74 +1,175 @@
 /* eslint-env jest */
 import { api } from "../../setup/testClient.js";
-import { logger } from "../../../src/config/logger.js";
-import { createAdmin, newProduct } from "../../setup/factory.js";
+import { createAdmin, createStaff } from "../../helpers/auth.helper.js";
+import { newProduct } from "../../fixtures/product.fixture.js";
 
 describe("products API (integration)", () => {
-  
-  it("Should create new product", async()=>{
+  it("GET /api/products/:id — org B cannot access org A product → 404", async () =>{
+    const tokenA = await createAdmin();
+
+    const product = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${tokenA}`)
+      .send(newProduct);
+
+    const tokenB = await createAdmin();
+    const productId = product.body.data.id;
+
+    const res = await api
+      .get(`/api/products/${ productId }`)
+      .set("Authorization", `Bearer ${tokenB}`)
+
+    expect(res.statusCode).toBe(404)
+  });
+
+  it("POST/api/products — org B cannot open list of products org A → 200", async () => {
+    const tokenA = await createAdmin();
+
+    await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${tokenA}`)
+      .send(newProduct);
+
+    const tokenB = await createAdmin();
+
+    const res = await api
+      .get("/api/products")
+      .set("Authorization", `Bearer ${tokenB}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.data.products).toEqual([]);
+  });
+
+  it("POST /api/products — admin creates product → 201", async () => {
+     const token = await createAdmin();
 
     const res = await api
       .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
       .send(newProduct);
 
-
-    const createdId = res.body.data.id; 
-    expect(createdId).toBeDefined();
-
-    logger.info("POST/api/products->", res.statusCode, res.body);
+    expect(res.statusCode).toBe(201);
+    expect(res.body.data.id).toBeDefined();
+    expect(res.body.data.name).toBe(newProduct.name);
+    expect(Number(res.body.data.price)).toBe(newProduct.price);
+    expect(res.body.data.quantity).toBe(newProduct.quantity);
   });
 
-  it("should return list of products", async () => {
+  it("GET /api/products — returns paginated list → 200", async () => {
+    const token = await createAdmin();
 
-    const res = await api.get("/api/products");
+    const res = await api
+      .get("/api/products")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(res.statusCode).toBe(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.headers["content-type"]).toMatch(/json/);
+    expect(Array.isArray(res.body.data.products)).toBe(true);
+    expect(res.body.data.pagination).toBeDefined();
+    expect(res.body.data.pagination.total).toBeDefined();
   });
 
-  it("should return item by id", async () => {
+  it("GET /api/products/:id — returns product by id → 200", async () => {
+    const token = await createAdmin();
 
-    const product = await api.post("/api/products").send(newProduct)
+    const created = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newProduct);
 
-    const createdId = product.body.data.id
+    const createdId = created.body.data.id;
 
-    const res = await api.get(`/api/products/${createdId}`);
+    const res = await api
+      .get(`/api/products/${createdId}`)
+      .set("Authorization", `Bearer ${token}`);
+
     expect(res.statusCode).toBe(200);
     expect(res.body.status).toBe("success");
     expect(res.body.data.id).toBe(createdId);
+    expect(res.body.data.name).toBe(newProduct.name);
   });
 
-  it("should update product data", async() => {
-    const updateProductTest = {
-      "price": "10.00",
-      "quantity" : 1,
-      "name": "UpdateTest"
-    };
+  it("PUT /api/products/:id — admin updates product → 200", async () => {
+    const token = await createAdmin();
+    const updateData = { price: "10.00", quantity: 1, name: "UpdateTest" };
 
-    const product = await api.post("/api/products").send(newProduct)
+    const created = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newProduct);
 
-    const createdId = product.body.data.id
+    const createdId = created.body.data.id;
 
-    const res = await api.put(`/api/products/${createdId}`)
-    .send(updateProductTest)
+    const res = await api
+      .put(`/api/products/${createdId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updateData);
 
-    expect(res.status).toBe(200)
-    expect(res.body.data).toMatchObject(updateProductTest)
-    expect(Number(res.body.data.price)).toBe(10)
-    expect(res.body.data.quantity).toBe(1)
+    expect(res.statusCode).toBe(200);
+    expect(res.body.data.name).toBe(updateData.name);
+    expect(Number(res.body.data.price)).toBe(10);
+    expect(res.body.data.quantity).toBe(updateData.quantity);
   });
 
-  it("Should delete product", async() => {
+  it("DELETE /api/products/:id — admin deletes product → 204", async () => {
+    const token = await createAdmin();
 
-    let admin = await createAdmin()
+    const created = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newProduct);
 
-    const product = await api.post("/api/products").set("Authorization", `Bearer ${admin}`).send(newProduct)
+    const createdId = created.body.data.id;
 
-    const createdId = product.body.data.id
+    const res = await api
+      .delete(`/api/products/${createdId}`)
+      .set("Authorization", `Bearer ${token}`);
 
-    const res = await api.delete(`/api/products/${createdId}`).set("Authorization", `Bearer ${admin}`);
-    expect(res.status).toBe(204);
-    expect(res.body).toEqual({})
+    expect(res.statusCode).toBe(204);
+    expect(res.body).toEqual({});
   });
-});
+
+  it("GET/api/products - getting products without token -> 401", async () => {
+    const res = await api
+      .get("/api/products")
+
+    expect(res.statusCode).toBe(401)
+  });
+
+  it("POST/api/products - missed argument -> 400", async () => {
+    const token = await createAdmin();
+
+    const res = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send({name: "test product"})
+
+    expect(res.statusCode).toBe(400)
+  });
+
+  it("POST/api/products - negative price -> 400", async () => {
+    const token = await createAdmin();
+
+    const res = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "test product",
+        price: -1,
+        quantity: 10
+        });
+
+    expect(res.statusCode).toBe(400)
+  });
+
+  it("POST/api/products - staff tries to create product -> 403", async () => {
+    const token = await createStaff();
+
+    const res = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newProduct);
+
+    expect(res.statusCode).toBe(403)
+  });
+})

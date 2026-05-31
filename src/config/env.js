@@ -27,6 +27,7 @@ export const env = cleanEnv(process.env, {
   }),
 
   DATABASE_URL: str(),
+  CLIENT_URL: str(),
 
   REDIS_URL: str({default:""}),
   REDIS_ENABLE: bool({}),

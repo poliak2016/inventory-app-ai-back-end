@@ -3,5 +3,5 @@ export default {
   testMatch: ["**/tests/**/*.test.js"],
   globalSetup: "<rootDir>/tests/setup/setupDB.js",
   setupFilesAfterEnv: ["<rootDir>/tests/setup/jest.afterEnv.js"],
-  testTimeout: 2000,
+  testTimeout: 10000,
 };

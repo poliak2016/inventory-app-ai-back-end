@@ -1,4 +1,4 @@
-import { ValidationError } from "../../errors/products/productErrors.js";
+import { ValidationError } from "../../errors/base.error.js";
 
 export const validate = (schema, source = "body") => (req, _res, next) => {
   const result = schema.safeParse(req[source]);
@@ -9,6 +9,9 @@ export const validate = (schema, source = "body") => (req, _res, next) => {
     });
   }
 
-  req[source] = result.data;
+  req.validated = {
+    ...(req.validated ?? {}),
+    [source]: result.data,
+  };
   return next();
 };

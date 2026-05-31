@@ -1,6 +1,6 @@
 import { env } from "../../config/env.js";
-import { getRedis } from "../../config/redis.js";
-import { rateLimitCounter } from "../../services/rateLimitCounter.js";
+import { getRedis } from "../../infrastructure/redis/redis.client.js";
+import { rateLimitCounter } from "../../infrastructure/redis/redis.rateLimitCounter.js";
 import { logger } from "../../config/logger.js";
 
 export const rateLimitMiddleware = async (req, res, next) => {

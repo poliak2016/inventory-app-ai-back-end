@@ -44,3 +44,9 @@ coverage/
 # OS
 $RECYCLE.BIN/
 .claude/settings.local.json
+.postman
+
+CHECKLIST.md
+
+# Claude Code tools
+claude-code-limit-tracker/

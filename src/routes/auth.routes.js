@@ -1,17 +1,16 @@
-import {Router} from "express"
-import {refreshUserController, registerUserController, loginUserController, getMeController, logoutUserController} from "../controllers/auth.controller.js"
-import { validate } from "../middleware/validation/validate.middleware.js"
-import { registerSchema, loginSchema } from "../schemas/auth.schema.js"
-import { authenticate } from "../middleware/auth/authenticate.js"
+import { Router } from "express";
+import { authController } from "../controllers/auth.controller.js";
+import { validate } from "../middleware/validation/validate.middleware.js";
+import { registerSchema, loginSchema } from "../validationSchemas/auth.schema.js";
+import { authMiddleware } from "../middleware/auth/authMiddleware.js";
 
+const router = Router();
 
-const router = Router()
-
-router.get("/user", authenticate, getMeController)
-router.post("/refresh",refreshUserController)
-router.post("/register", validate(registerSchema), registerUserController)
-router.post("/login", validate(loginSchema), loginUserController)
-router.post("/logout", logoutUserController)
+router.get("/user", authMiddleware, authController.currentUser);
+router.post("/refresh", authController.refresh);
+router.post("/register", validate(registerSchema), authController.register);
+router.post("/login", validate(loginSchema), authController.login);
+router.post("/logout", authController.logout);
 
 
 export default router

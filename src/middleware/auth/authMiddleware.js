@@ -7,21 +7,25 @@ export const authMiddleware = async (req, res, next) => {
     const token = extractToken(req);
 
     if (!token) {
-      throw new AuthError({ message: "Authentication is required" });
+      throw new AuthError("Authentication is required");
     }
 
     const payload = await verifyAccessToken(token);
+  
+
+    if (!payload.sub || !payload.organization_id) {
+      throw new AuthError("Invalid token payload");
+    }
 
     req.user = {
       id: payload.sub,
       email: payload.email,
       role: payload.role,
+      organization_id: payload.organization_id,
     };
 
-    next();
+    return next();
   } catch (err) {
-    throw new AuthError({
-      message: err.message || "Invalid or expired token",
-    });
+    return next(err);
   }
 };
