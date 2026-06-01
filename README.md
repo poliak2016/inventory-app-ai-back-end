@@ -1,125 +1,52 @@
 # Inventory App — Backend
 
-# Inventory App — Backend (engineering brief)
+REST API for inventory management in the gastronomy industry.
 
-This README focuses on implementation facts and design rationales rather than marketing. It documents how the service currently behaves, where to look in code, and concrete next steps an engineer can take.
+## Stack
 
-## 1 — Purpose (short)
+- **Runtime** - Node.js 20 (ESM) + Express
+- **Database** - PostgreSQL + node-pg-migrate
+- **Cache / Rate limiting** - Redis
+- **Auth** - JWT (access + refresh tokens)
+- **Validation** - Zod
+- **Logging** - Winston
+- **Tests** - Jest + Supertest
+- **Infrastructure** - Docker + Docker Compose
 
-Provides a secure, auditable backend for inventory operations (products, categories, stock movements) and multi-organization user onboarding. Suitable as the backend for a web admin, POS, or mobile client.
+## Architecture
 
-## 2 — Stack (explicit)
+Routes → Controllers → Services → Repositories → Database
 
-- Node.js (ESM) + Express
-- PostgreSQL (`pg`) + `node-pg-migrate`
-- Redis (optional) via `redis` client
-- JWTs (`jsonwebtoken`) — access + refresh; refresh tokens hashed server-side
-- Zod for request validation; `bcrypt` for password hashing; Winston for logs
-- Tests: Jest + Supertest; containers via Docker Compose
+| Layer | Responsibility |
+|---|---|
+| Routes | Wire HTTP endpoints to controllers |
+| Controllers | HTTP only — parse request, return response |
+| Services | Business logic, orchestration, transactions |
+| Repositories | Parameterized SQL queries only |
 
-## 3 — Concrete architecture and responsibilities
+Transactions are owned by services. Repositories accept an optional DB client to participate in them.
 
-- Routes: `src/routes` — wire request to controller
-- Controllers: `src/controllers` — HTTP layer only (status codes, cookies)
-- Services: `src/services` — orchestrate business flows and transactions (token rotation, registration)
-- Repositories: `src/repositories` — parameterized SQL queries (see `src/model`)
-- Infrastructure: `src/infrastructure` — Redis client, JWT sign/verify, hashing helpers
+## Authentication 
 
-Use `src/db/transaction.js` (`transactionFunc(cb)`) for any multi-statement operation requiring atomicity.
-
-## 4 — Authentication (exact behavior)
-
-- Login: `loginUserService` validates credentials, signs an access token and a refresh token (`jti` added), hashes refresh token and stores hash in `refresh_tokens` table within a DB transaction, sets `refreshToken` as `httpOnly` cookie and returns `accessToken`.
-- Refresh: `refreshUserService` verifies refresh JWT, hashes it and looks up a valid DB row (`revoked_at IS NULL` AND `expires_at > now()`). If valid and owner matches payload, the row is revoked, a new refresh token is issued and stored (rotation), and a new access token is issued. If a revoked token is presented (reuse), the service revokes all user tokens and rejects the request. All of this runs inside `transactionFunc`.
+- Login: Validates email and password, generates access + refresh token pair, stores refresh token hash in DB, sets refresh token as httpOnly cookie, returns access token.
+- Refresh: Verifies token signature, matches hash against DB, revokes old token, issues new access + refresh pair.
+If a revoked token is presented, all user tokens are immediately revoked.
 - Logout: revokes the refresh token by hash and clears cookie.
 
-Key files: `src/services/auth.service.js`, `src/repositories/token.repository.js`, `src/infrastructure/auth/*`.
-
 Security notes:
-- Refresh tokens are never persisted raw. The hashing method is in `src/infrastructure/auth/helpers/tokenHash.js`.
-- Cookie settings: `httpOnly`, `sameSite: strict`, `secure` in production, `path: /api/auth`.
+- Refresh tokens stored as hash in DB - never raw
+- Cookie: httpOnly, sameSite: strict, secure in production
+- Reuse detection - if a revoked token is presented, all user tokens are immediately revoked.
 
-## 5 — Database mappings (precise)
-
-Primary tables and important constraints (refer to `migrations/`):
-
-- `users` — `id UUID PK`, `email UNIQUE`, `password_hash`, `role`, timestamps
-- `organizations` — `id UUID`, `name`, timestamps
-- `products` — `id UUID`, `name`, `price NUMERIC`, `quantity INTEGER`, `category_id` → `categories(id)`
-- `categories` — `id UUID`, `parent_id` (nullable), `slug`
-- `stock_movements` — `product_id` → `products(id)`, `created_by` → `users(id)`, `type` CHECK `('in','out','adjustment')`, `quantity > 0`
-- `refresh_tokens` — `id UUID`, `user_id UUID`, `token_hash TEXT`, `expires_at TIMESTAMPTZ`, `revoked_at TIMESTAMPTZ`, `created_at`
-
-Operational note: `stock_movements` is the audit log; `products.quantity` is maintained as a cache/snapshot.
-
-## 6 — Caching & Redis specifics
-
-- Redis client wraps connection attempt and falls back to a noop client when disabled or unavailable (`src/infrastructure/redis/redis.client.js`).
-- Product endpoints cache: TTL = 60s (see `src/services/products.service.js`), keys `products:all` and `products{id}`; cache invalidated on writes.
-
-## 7 — Runbook (explicit commands)
-
-Install:
-
-```bash
-npm ci
-```
-
-Run migrations (local .env.dev):
-
-```bash
-npm run migrate:up:local
-```
-
-Start (dev):
-
-```bash
-npm run dev
-```
-
-Run containerized dev stack (Postgres on host port `5433`, API on `3000`):
-
-```bash
-npm run docker:dev
-```
-
-Stop dev stack and remove volumes:
-
-```bash
-npm run docker:dev:down
-```
-
-Run containerized production stack (Postgres + Redis + API; requires `.env.prod` and `.env.docker`):
-
-```bash
-npm run docker:prod
-```
-
-Run tests (uses `.env.test`):
-
-```bash
-npm run test
-```
-
-## 8 — Required environment variables (validated by code)
-
-- `DATABASE_URL` (required)
-- `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` (required)
-- `JWT_ACCESS_EXPIRES_IN` (e.g. `15m`), `JWT_REFRESH_EXPIRES_IN` (e.g. `30d`)
-- `BCRYPT_SALT_ROUNDS` (default 10)
-- `REDIS_URL`, `REDIS_ENABLE`
-- `APP_PORT`
-
-The app will fail fast if required env variables are missing (see `src/config/env.js`).
-
-## 9 — API endpoints (engineer-focused)
+## API endpoints
 
 Auth:
 
-- `POST /api/auth/register` — creates organization + admin. Runs inside DB transaction.
+- `POST /api/auth/register` — creates organization + admin. 
 - `POST /api/auth/login` — returns `accessToken` and sets `refreshToken` cookie.
 - `POST /api/auth/refresh` — rotates refresh token, issues new access token.
 - `POST /api/auth/logout` — revokes refresh token.
+- `GET /api/auth/user`
 
 Products:
 
@@ -127,224 +54,62 @@ Products:
 - `GET /api/products/:id`
 - `POST /api/products`
 - `PUT /api/products/:id`
-- `DELETE /api/products/:id` — protected by `authenticate` & `requireRole('admin')`
+- `DELETE /api/products/:id`
 
-Refer to `src/schemas` for request/response shapes.
+Categories:
 
-## 10 — Short-term engineering improvements (concrete tasks)
+- `POST /api/categories`
+- `GET /api/categories`
+- `PATCH /api/categories/:id`
+- `DELETE /api/categories/:id`
 
-1. Enforce `organization_id` filtering in every repository; add tests demonstrating cross-tenant access is rejected.
-2. Add DB index on `refresh_tokens(expires_at)` and a scheduled job to `DELETE` expired rows (or `VACUUM` strategy in managed DB).
-3. Add explicit rate limiter on auth endpoints (IP + account throttling); add `RATE_LIMIT_*` defaults in `.env.example`.
-4. Implement smoke CI job: start Postgres+Redis, run migrations, execute a test that performs login → refresh → reuse-detection.
-5. Add an `admin` inspection endpoint (protected) to list active refresh token counts per user for operational debugging.
+Organizations: 
 
----
+- `PATCH /api/organizations/me`
+- `GET /api/organizations/me`
 
-## 🚀 Key Features
+Stock Movements:
 
-- JWT authentication (access + refresh tokens with rotation & reuse detection)
-- Secure refresh token storage (hashed in database)
-- Clean architecture (controller → service → repository)
-- PostgreSQL with migrations (node-pg-migrate)
-- Redis caching + graceful fallback
-- Rate limiting (Redis-based)
-- Input validation with Zod
-- Integration tests (Jest + Supertest)
-- Dockerized development environment
+- `POST /api/stock/movements`
+- `GET /api/stock/movements/:productId/history`
 
----
 
-## 🎯 Purpose
+## Testing
 
-Backend API for managing:
-- products
-- categories
-- stock movements (audit log)
+36 integration tests covering:
 
-Supports multi-organization setup and secure user authentication.  
-Designed to be used by web apps, POS systems, or mobile clients.
+- Auth — login, registration, refresh rotation, RBAC
+- Products — CRUD, pagination, validation, tenant isolation
+- Categories — CRUD, validation
+- Stock Movements — IN/OUT, insufficient stock, history
+- Organizations — GET/PATCH profile
 
----
+```bash
+npm test
+```
 
-## 🧠 Why this project
+## Running locally
 
-Built to simulate a real production backend, not just a tutorial project.
-
-Focus areas:
-- secure authentication (token rotation, reuse detection)
-- scalable architecture
-- separation of concerns
-- SaaS-ready foundation (multi-organization support)
-
----
-
-## 🏗 Architecture
-
-Routes → Controllers → Services → Repositories → Database
-
-**Responsibilities:**
-
-- Routes — define endpoints and connect to controllers  
-- Controllers — handle HTTP (request/response, cookies, status codes)  
-- Services — business logic and orchestration (auth flows, transactions)  
-- Repositories — database queries (parameterized SQL)  
-- Infrastructure — Redis, JWT, hashing utilities  
-
----
-
-## 🔐 Authentication (Detailed Flow)
-
-### Login
-- Validate credentials  
-- Generate access + refresh token (with jti)  
-- Hash refresh token and store in DB  
-- Set refresh token in httpOnly cookie  
-- Return access token  
-
-### Refresh
-- Verify refresh token  
-- Hash and match against DB  
-- Check: not revoked and not expired  
-- Rotate token:
-  - revoke old token  
-  - issue new one  
-- Detect reuse → revoke all user tokens  
-
-### Logout
-- Revoke refresh token  
-- Clear cookie  
-
-### 🔒 Security Notes
-
-- Refresh tokens are never stored raw  
-- Cookie config:
-  - httpOnly  
-  - sameSite: strict  
-  - secure (production)  
-- Token rotation prevents replay attacks  
-
----
-
-## 🗄 Database Design
-
-Main tables:
-
-- users — authentication + roles  
-- organizations — multi-tenant structure  
-- products — inventory state  
-- categories — hierarchical categories  
-- stock_movements — audit log of all changes  
-- refresh_tokens — hashed tokens with expiration & revocation  
-
-**Important concept:**
-- stock_movements = source of truth (audit log)  
-- products.quantity = cached snapshot  
-
----
-
-## ⚡ Caching (Redis)
-
-- Product endpoints cached (TTL: 60s)  
-- Keys:
-  - products:all  
-  - products:{id}  
-- Cache invalidated on write operations  
-- Fallback to noop client if Redis unavailable  
-
----
-
-## 🧪 Testing
-
-- Integration tests with Jest + Supertest  
-- Covers authentication and API endpoints  
-- Uses separate test environment (.env.test)  
-
----
-
-## 📡 API Endpoints
-
-### Auth
-
-POST /api/auth/register  
-POST /api/auth/login  
-POST /api/auth/refresh  
-POST /api/auth/logout  
-
-### Products
-
-GET    /api/products  
-GET    /api/products/:id  
-POST   /api/products  
-PUT    /api/products/:id  
-DELETE /api/products/:id  
-
----
-
-## ▶️ Run the Project
-
-### Install
+**Install:**
+```bash
 npm ci
+```
+**Environment:**
+```bash
+cp .env.example .env.dev
+# fill in DATABASE_URL and JWT secrets
+```
 
-### Run migrations
+**Migrations + start:**
+
+```bash
 npm run migrate:up:local
-
-### Start (dev)
 npm run dev
+```
 
-### Docker
+
+**Docker (recommended):**
+
+```bash
 npm run docker:dev
-
-### Tests
-npm run test
-
----
-
-## ⚙️ Environment Variables
-
-Required:
-
-DATABASE_URL  
-JWT_ACCESS_SECRET  
-JWT_REFRESH_SECRET  
-
-Optional:
-
-JWT_ACCESS_EXPIRES_IN=15m  
-JWT_REFRESH_EXPIRES_IN=30d  
-BCRYPT_SALT_ROUNDS=10  
-REDIS_URL  
-REDIS_ENABLE  
-APP_PORT  
-
-App fails fast if required variables are missing.
-
----
-
-## 🔧 Next Improvements
-
-- Enforce organization-level isolation in all queries  
-- Add DB index on refresh_tokens(expires_at)  
-- Add cleanup job for expired tokens  
-- Add rate limiting for auth endpoints  
-- Add CI pipeline (test + migrations)  
-- Add admin endpoint for token inspection  
-
----
-
-## 📁 Key Files
-
-- src/services/auth.service.js  
-- src/repositories/token.repository.js  
-- src/infrastructure/auth/*  
-- src/db/transaction.js  
-
----
-
-## 📌 Summary
-
-This project demonstrates:
-- real backend architecture  
-- secure authentication design  
-- database-driven thinking  
-- production-oriented development approach  
+```
