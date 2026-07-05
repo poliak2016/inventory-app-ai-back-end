@@ -40,9 +40,6 @@ export const productsController = {
   deleteProduct: asyncHandler(async (req, res) => {
     const { id } = req.validated.params;
     await productsService.deleteProduct(req.user, id);
-    res.status(204).json({
-      status: "success",
-      message: "Product deleted successfully",
-    });
+    res.status(204).send();
   }),
 };

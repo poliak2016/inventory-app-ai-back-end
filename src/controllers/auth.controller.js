@@ -37,7 +37,7 @@ export const authController = {
 
     return res.status(200).json({
       status: "success",
-      accessToken,
+      data: { accessToken },
     });
   }),
 
@@ -64,7 +64,7 @@ export const authController = {
 
     return res.status(200).json({
       status: "success",
-      accessToken,
+      data: { accessToken },
     });
   }),
 
