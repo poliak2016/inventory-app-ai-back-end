@@ -3,3 +3,8 @@ name: List Products
 method: GET
 url: "{{baseUrl}}/api/products/"
 order: 1000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{accessToken}}'

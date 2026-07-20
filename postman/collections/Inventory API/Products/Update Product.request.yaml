@@ -2,6 +2,11 @@ $kind: http-request
 method: PUT
 url: '{{baseUrl}}/api/products/{{productId}}'
 order: 4000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{accessToken}}'
 headers:
   - key: Content-Type
     value: application/json
