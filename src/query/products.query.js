@@ -28,6 +28,13 @@ export const qFindProductById = `
   LIMIT 1
 `;
 
+export const qFindByIds = `
+  SELECT id
+  FROM ${PRODUCTS_TABLE}
+  WHERE organization_id = $1
+    AND id = ANY($2::uuid[])
+`
+
 export const qCreateProduct = `
   INSERT INTO ${PRODUCTS_TABLE} (
     name,

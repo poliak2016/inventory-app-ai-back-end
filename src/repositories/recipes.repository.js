@@ -1,0 +1,102 @@
+import { getExecutor } from "../db/executor.js";
+import {
+  qGetAll,
+  qCountRecipes,
+  qFindRecipeById,
+  qCreateRecipe,
+  qUpdateRecipe,
+  qDeleteRecipe,
+  qGetIngredientsByRecipeId,
+  qInsertIngredient,
+  qDeleteIngredientsByRecipeId,
+} from "../query/recipes.query.js";
+
+export const recipesRepository = {
+  async getAll(organization_id, limit = 20, offset = 0, categoryId = null, db = null) {
+    const executor = getExecutor(db);
+    const [result, countResult] = await Promise.all([
+      executor.query(qGetAll, [organization_id, limit, offset, categoryId]),
+      executor.query(qCountRecipes, [organization_id, categoryId]),
+    ]);
+
+    const rows = result.rows;
+    const total = parseInt(countResult.rows[0].count);
+
+    return { rows, total };
+  },
+
+  async findById(organization_id, id, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qFindRecipeById, [organization_id, id]);
+    return rows[0] ?? null;
+  },
+
+  async create(
+    { name, instructions, yieldWeight, yieldUnit, portions, salePrice, photoUrl, category_id, organization_id },
+    db = null
+  ) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qCreateRecipe, [
+      name,
+      instructions ?? null,
+      yieldWeight ?? null,
+      yieldUnit ?? "g",
+      portions ?? null,
+      salePrice ?? null,
+      photoUrl ?? null,
+      category_id ?? null,
+      organization_id,
+    ]);
+    return rows[0];
+  },
+
+  async update(
+    organization_id,
+    id,
+    { name, instructions, yieldWeight, yieldUnit, portions, salePrice, photoUrl, category_id },
+    db = null
+  ) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qUpdateRecipe, [
+      organization_id,
+      id,
+      name,
+      instructions ?? null,
+      yieldWeight ?? null,
+      yieldUnit ?? "g",
+      portions ?? null,
+      salePrice ?? null,
+      photoUrl ?? null,
+      category_id ?? null,
+    ]);
+    return rows[0] ?? null;
+  },
+
+  async delete(organization_id, id, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qDeleteRecipe, [organization_id, id]);
+    return rows[0] ?? null;
+  },
+
+  async getIngredients(recipeId, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qGetIngredientsByRecipeId, [recipeId]);
+    return rows;
+  },
+
+  async replaceIngredients(recipeId, ingredients, db = null) {
+    const executor = getExecutor(db);
+    await executor.query(qDeleteIngredientsByRecipeId, [recipeId]);
+
+    const inserted = [];
+    for (const ingredient of ingredients) {
+      const { rows } = await executor.query(qInsertIngredient, [
+        recipeId,
+        ingredient.productId,
+        ingredient.quantity,
+      ]);
+      inserted.push(rows[0]);
+    }
+    return inserted;
+  },
+};

@@ -50,13 +50,14 @@ Every resource needs: CRUD happy path · 401/403 · multi-tenant isolation (cros
 _(update this list as items are resolved — do not let it silently go stale)_
 
 - `[BLOCKER]` recipes: `replaceIngredients` doesn't validate `productId` belongs to the recipe's organization — cross-tenant injection risk
+- `[BLOCKER]` recipes + products: `categoryId` accepted from client on create/update with no check it belongs to the caller's organization — same cross-tenant injection class as above, affects both `recipes.service.js` and `products.service.js`. `category.repository.js` has no `findById` at all yet (needed to fix this).
 - recipes: update schema marks all fields optional → omitting a field on PUT nulls it (or resets `yieldUnit` to default)
 - recipes: `foodCost` calculation ignores unit conversion between recipe and product units
 - recipes: N+1 queries in `getAll` and `replaceIngredients`
 - recipes: zero test coverage — blocks "testing standard" above
 
 ## Current Priorities
-1. Resolve `[BLOCKER]` above before any further recipes work
+1. Resolve both `[BLOCKER]`s above before any further recipes work
 2. Recipes: fix remaining bugs, then bring up to testing standard
 3. Merge or reconcile `chore/update-readme` branch with backend `main`
 4. Move on to Phase 1 backend items (see PRODUCT_SPEC.md roadmap) only after 1-3 are clean
