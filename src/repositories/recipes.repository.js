@@ -63,7 +63,7 @@ export const recipesRepository = {
       name,
       instructions ?? null,
       yieldWeight ?? null,
-      yieldUnit ?? "g",
+      yieldUnit ?? null,
       portions ?? null,
       salePrice ?? null,
       photoUrl ?? null,
