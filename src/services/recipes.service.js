@@ -3,6 +3,7 @@ import { recipesRepository } from "../repositories/recipes.repository.js";
 import { getOrganizationId } from "../shared/auth/getOrganizationId.js";
 import { transactionFunc } from "../db/transaction.js";
 import { productsRepository } from "../repositories/products.repository.js";
+import { categoryRepository } from "../repositories/category.repository.js";
 
 const computeFoodCost = (ingredients) => {
   return ingredients.reduce(
@@ -79,6 +80,14 @@ export const recipesService = {
       throw new NotFoundError("Product")
     }
 
+    if(categoryId){
+      const category = await categoryRepository.findById(organization_id, categoryId)
+
+      if(!category){
+        throw new NotFoundError("Category")
+      }
+    }
+
     return transactionFunc(async (client) => {
       const recipe = await recipesRepository.create(
         { ...rest, category_id: categoryId ?? null, organization_id },
@@ -113,6 +122,13 @@ export const recipesService = {
     
     }
 
+     if(categoryId){
+      const category = await categoryRepository.findById(organization_id, categoryId)
+
+      if(!category){
+        throw new NotFoundError("Category")
+      }
+    }
     return transactionFunc(async (client) => {
       const updated = await recipesRepository.update(
         organization_id,

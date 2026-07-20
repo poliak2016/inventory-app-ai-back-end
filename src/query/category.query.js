@@ -29,6 +29,13 @@ LIMIT $2
 OFFSET $3
 `;
 
+export const qFindById = `
+SELECT id
+FROM ${CATEGORY_TABLE}
+WHERE organization_id =$1
+AND id = $2
+`
+
 export const qUpdateCategory = `
 UPDATE ${CATEGORY_TABLE}
 SET name = $1, slug = $2, updated_at = NOW()
