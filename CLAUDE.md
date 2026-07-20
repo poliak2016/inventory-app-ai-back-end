@@ -51,13 +51,13 @@ _(update this list as items are resolved — do not let it silently go stale)_
 
 - ~~`[BLOCKER]` recipes: `replaceIngredients` doesn't validate `productId` belongs to the recipe's organization~~ — fixed 2026-07-18 (`d71432b`): `productsRepository.findByIds` + Zod duplicate check + service-level ownership check before the write transaction
 - ~~`[BLOCKER]` recipes + products: `categoryId` accepted from client with no organization check~~ — fixed 2026-07-18 (`259dc7c`): `categoryRepository.findById` added, wired into `recipes.service.js` and `products.service.js` before the write
-- recipes: update schema marks all fields optional → omitting a field on PUT nulls it (or resets `yieldUnit` to default)
+- ~~recipes: update schema marks all fields optional → omitting a field on PUT nulls it~~ — fixed 2026-07-20 (`ff23385`): `qUpdateRecipe` uses `COALESCE($n, column)`, repository sends real `null` for omitted fields (including `yieldUnit`, previously defaulted to "g")
 - recipes: `foodCost` calculation ignores unit conversion between recipe and product units
 - recipes: N+1 queries in `getAll` and `replaceIngredients`
 - recipes: zero test coverage — blocks "testing standard" above
 
 ## Current Priorities
-1. Both `[BLOCKER]`s resolved — recipes: fix remaining bugs (silent field nulling, foodCost unit conversion, N+1), then bring up to testing standard
+1. Both `[BLOCKER]`s resolved, silent field nulling fixed — recipes: fix remaining bugs (foodCost unit conversion, N+1), then bring up to testing standard
 2. Merge or reconcile `chore/update-readme` branch with backend `main`
 3. Move on to Phase 1 backend items (see PRODUCT_SPEC.md roadmap) only after 1-2 are clean
 
