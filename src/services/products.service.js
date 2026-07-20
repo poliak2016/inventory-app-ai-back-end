@@ -1,5 +1,6 @@
 import { NotFoundError, ValidationError } from "../errors/base.error.js";
 import { productsRepository } from "../repositories/products.repository.js";
+import { categoryRepository } from "../repositories/category.repository.js";
 import { getOrganizationId } from "../shared/auth/getOrganizationId.js";
 import { CACHE_KEYS } from "../infrastructure/redis/cache.keys.js";
 import { getCache, setCache, delCache } from "../infrastructure/redis/cache.helper.js";
@@ -60,6 +61,14 @@ export const productsService = {
   createProduct: async (user, { categoryId, name, price, quantity }) => {
     const organization_id = getOrganizationId(user);
 
+     if(categoryId){
+          const category = await categoryRepository.findById(organization_id, categoryId)
+    
+          if(!category){
+            throw new NotFoundError("Category")
+          }
+        }
+
     const result = await productsRepository.create({
       organization_id,
       category_id: categoryId ?? null,
@@ -84,6 +93,14 @@ export const productsService = {
     }
 
     const { categoryId, ...rest } = productData;
+
+     if(categoryId){
+          const category = await categoryRepository.findById(organization_id, categoryId)
+    
+          if(!category){
+            throw new NotFoundError("Category")
+          }
+        }
     const result = await productsRepository.update(
       organization_id,
       id,

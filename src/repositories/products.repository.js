@@ -3,6 +3,7 @@ import { getExecutor } from "../db/executor.js";
 import {
   qCreateProduct,
   qFindProductById,
+  qFindByIds,
   qDeleteProduct,
   qUpdateProduct,
   qIncreaseProductQuantity,
@@ -33,6 +34,11 @@ export const productsRepository = {
       id,
     ]);
     return rows[0] ?? null;
+  },
+  async findByIds(organization_id, ids, db=null){
+    const executor = getExecutor(db)
+    const { rows } = await executor.query(qFindByIds,[organization_id, ids] )
+    return rows
   },
 
   async create(
