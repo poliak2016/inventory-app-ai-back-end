@@ -32,7 +32,7 @@ OFFSET $3
 export const qFindById = `
 SELECT id
 FROM ${CATEGORY_TABLE}
-WHERE organization_id =$1
+WHERE organization_id = 1$1
 AND id = $2
 `
 
