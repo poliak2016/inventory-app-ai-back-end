@@ -5,7 +5,7 @@ url: "{{baseUrl}}/api/products"
 auth:
   type: bearer
   credentials:
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhOWMxMDg3ZC0yMDA0LTQxMzktYTk1OC1iODc2YTRlOGNlM2MiLCJlbWFpbCI6InVzZXJAZXhhbXBsZXMuY29tIiwicm9sZSI6ImFkbWluIiwib3JnYW5pemF0aW9uX2lkIjoiZWE5YjI0ZjYtMmMzOC00OWI5LWIyNTgtZjI0MGY1N2M2Y2JiIiwiaWF0IjoxNzc4NDc5NzIwLCJleHAiOjE3Nzg0ODA2MjB9.-sgURD9Bt9k7wlNefuH4lEHVOfiNmAoVDgUE5zTGhGg
+    token: "{{token}}"
 order: 3000
 headers:
   Content-Type: application/json
@@ -16,5 +16,5 @@ body:
       "name": "Sample Product",
       "price": 19.99,
       "quantity": 10,
-      "categoryId": "11111111-1111-1111-1111-111111111111"
+      "categoryId": "4fdcb718-0192-4153-ab36-41c869d78337"
     }
