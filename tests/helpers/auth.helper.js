@@ -16,7 +16,7 @@ export const createAdmin = async () => {
     password: adminUser.password,
   });
 
-  return loginRes.body.accessToken;
+  return loginRes.body.data.accessToken;
 };
 
 export const createStaff = async () => {
@@ -39,5 +39,5 @@ export const createStaff = async () => {
     password: staffUser.password,
   });
 
-  return loginRes.body.accessToken;
+  return loginRes.body.data.accessToken;
 };

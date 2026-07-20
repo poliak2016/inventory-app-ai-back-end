@@ -32,6 +32,6 @@ export const createAdmin = async() =>{
 
   const loginRes = await api.post("/api/auth/login").send({ email: adminUser.email, password: adminUser.password });
 
-  return loginRes.body.accessToken
+  return loginRes.body.data.accessToken
 } 
 

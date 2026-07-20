@@ -18,8 +18,8 @@ describe("Auth /api/auth/user", ()=>{
       password: newUser.password
     });
 
-    const token = loginRes.body.accessToken;
-    expect(loginRes.body.accessToken).toBeDefined();
+    const token = loginRes.body.data.accessToken;
+    expect(loginRes.body.data.accessToken).toBeDefined();
     
 
     const res = await api.get("/api/auth/user").set("Authorization", `Bearer ${token}`);
@@ -41,7 +41,7 @@ describe("Auth /api/auth/user", ()=>{
     const res = await api.post("/api/auth/refresh").set("Cookie", cookies);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.accessToken).toBeDefined();
+    expect(res.body.data.accessToken).toBeDefined();
     expect(res.headers["set-cookie"]).toBeDefined();
   });
 
@@ -56,7 +56,7 @@ describe("Auth /api/auth/user", ()=>{
     expect(resLogin.statusCode).toBe(200);
 
 
-    const token = resLogin.body.accessToken
+    const token = resLogin.body.data.accessToken
     expect(token).toBeDefined();
 
     const product = await api.post("/api/products").set("Authorization", `Bearer ${token}`).send(newProduct);
@@ -75,7 +75,7 @@ describe("Auth /api/auth/user", ()=>{
       password: newUser.password
     });
 
-    const staffToken = resLoginStaff.body.accessToken
+    const staffToken = resLoginStaff.body.data.accessToken
 
     const res = await api.delete(`/api/products/${productID}`).set("Authorization", `Bearer ${staffToken}`)
 

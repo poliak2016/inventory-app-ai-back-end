@@ -11,11 +11,11 @@ describe("Auth /api/auth/login", () => {
     });
 
     expect(loginRes.statusCode).toBe(200);
-    expect(loginRes.body.accessToken).toBeDefined();
+    expect(loginRes.body.data.accessToken).toBeDefined();
 
     const meRes = await api
       .get("/api/auth/user")
-      .set("Authorization", `Bearer ${loginRes.body.accessToken}`);
+      .set("Authorization", `Bearer ${loginRes.body.data.accessToken}`);
 
     expect(meRes.statusCode).toBe(200);
   });
