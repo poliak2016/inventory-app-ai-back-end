@@ -52,12 +52,12 @@ _(update this list as items are resolved — do not let it silently go stale)_
 - ~~`[BLOCKER]` recipes: `replaceIngredients` doesn't validate `productId` belongs to the recipe's organization~~ — fixed 2026-07-18 (`d71432b`): `productsRepository.findByIds` + Zod duplicate check + service-level ownership check before the write transaction
 - ~~`[BLOCKER]` recipes + products: `categoryId` accepted from client with no organization check~~ — fixed 2026-07-18 (`259dc7c`): `categoryRepository.findById` added, wired into `recipes.service.js` and `products.service.js` before the write
 - ~~recipes: update schema marks all fields optional → omitting a field on PUT nulls it~~ — fixed 2026-07-20 (`ff23385`): `qUpdateRecipe` uses `COALESCE($n, column)`, repository sends real `null` for omitted fields (including `yieldUnit`, previously defaulted to "g")
-- recipes: `foodCost` calculation ignores unit conversion between recipe and product units
+- ~~recipes: `foodCost` calculation ignores unit conversion between recipe and product units~~ — resolved 2026-07-21: not a code bug, it's a doc/convention issue. `computeFoodCost` (`quantity × price`) is correct as long as `products.price` always means "price per `products.unit`" — confirmed this holds structurally (`ingredientSchema` has no unit field of its own, always inherits the product's unit). Fixed the misleading "ціна за кг" wording in `PRODUCT_SPEC.md` instead of touching the calculation. See Decision Log entry 2026-07-21.
 - recipes: N+1 queries in `getAll` and `replaceIngredients`
 - recipes: zero test coverage — blocks "testing standard" above
 
 ## Current Priorities
-1. Both `[BLOCKER]`s resolved, silent field nulling fixed — recipes: fix remaining bugs (foodCost unit conversion, N+1), then bring up to testing standard
+1. Recipes: fix remaining bug (N+1 queries), then bring up to testing standard
 2. Merge or reconcile `chore/update-readme` branch with backend `main`
 3. Move on to Phase 1 backend items (see PRODUCT_SPEC.md roadmap) only after 1-2 are clean
 
