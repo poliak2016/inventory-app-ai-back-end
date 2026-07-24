@@ -37,12 +37,24 @@ export const recipesService = {
       categoryId ?? null
     );
 
-    const recipes = await Promise.all(
-      rows.map(async (recipe) => {
-        const ingredients = await recipesRepository.getIngredients(recipe.id);
-        return withFoodCost(recipe, ingredients);
-      })
-    );
+    const recipeIds = rows.map((recipe) => recipe.id)
+
+    const ingredients = await recipesRepository.getIngredientsByRecipeIds(recipeIds)
+
+    const map = new Map()
+
+    ingredients.forEach((ingredient) => {
+      if (!map.has(ingredient.recipeId)) {
+        map.set(ingredient.recipeId, []);
+      }
+      map.get(ingredient.recipeId).push(ingredient)
+    })
+    
+
+    const recipes = rows.map((recipe) => {
+        const recipeIngredients = map.get(recipe.id) ?? [];
+        return withFoodCost(recipe, recipeIngredients);
+      });
 
     const hasMore = offset + limit < total;
 

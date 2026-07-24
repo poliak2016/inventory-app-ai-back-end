@@ -99,10 +99,12 @@ export const qGetIngredientsByRecipeId = `
   ORDER BY ri.created_at ASC
 `;
 
-export const qInsertIngredient = `
-  INSERT INTO ${RECIPE_INGREDIENTS_TABLE} (recipe_id, product_id, quantity)
-  VALUES ($1, $2, $3)
-  RETURNING id, recipe_id AS "recipeId", product_id AS "productId", quantity
+export const qGetIngredientsByRecipeIds = `
+  SELECT ${RECIPE_INGREDIENT_COLUMNS}
+  FROM  ${RECIPE_INGREDIENTS_TABLE} ri
+  JOIN products p ON p.id = ri.product_id
+  WHERE ri.recipe_id = ANY($1::uuid[])
+  ORDER BY ri.recipe_id DESC
 `;
 
 export const qDeleteIngredientsByRecipeId = `
