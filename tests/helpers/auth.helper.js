@@ -41,3 +41,8 @@ export const createStaff = async () => {
 
   return loginRes.body.data.accessToken;
 };
+
+export const authorization = (token) => {
+  return { Authorization: `Bearer ${token}` };
+};
+
