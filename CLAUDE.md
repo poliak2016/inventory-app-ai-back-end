@@ -54,10 +54,11 @@ _(update this list as items are resolved — do not let it silently go stale)_
 - ~~recipes: update schema marks all fields optional → omitting a field on PUT nulls it~~ — fixed 2026-07-20 (`ff23385`): `qUpdateRecipe` uses `COALESCE($n, column)`, repository sends real `null` for omitted fields (including `yieldUnit`, previously defaulted to "g")
 - ~~recipes: `foodCost` calculation ignores unit conversion between recipe and product units~~ — resolved 2026-07-21: not a code bug, it's a doc/convention issue. `computeFoodCost` (`quantity × price`) is correct as long as `products.price` always means "price per `products.unit`" — confirmed this holds structurally (`ingredientSchema` has no unit field of its own, always inherits the product's unit). Fixed the misleading "ціна за кг" wording in `PRODUCT_SPEC.md` instead of touching the calculation. See Decision Log entry 2026-07-21.
 - ~~recipes: N+1 queries in `getAll` and `replaceIngredients`~~ — fixed 2026-07-24 (`8f4e2ba`): `getAll` batches ingredient fetch via `qGetIngredientsByRecipeIds` (`= ANY($1::uuid[])`) + `Map` grouping instead of per-recipe queries; `replaceIngredients` uses a dynamically-sized multi-row `INSERT` instead of a per-ingredient loop
-- recipes: zero test coverage — blocks "testing standard" above
+- ~~recipes: zero test coverage~~ — fixed 2026-07-25: `tests/integration/recipes/recipes.test.js` covers CRUD happy path, 401/403, cross-org isolation (404), validation (400, including duplicate `productId`). New helpers: `tests/helpers/product.helper.js` (`createProduct`), `authorization()` added to `auth.helper.js`. Full suite: 11 test files, 46 tests, all passing.
+- recipes: `createRecipe`/`updateRecipe` responses don't include `foodCost`/`foodCostPercentage` (no `withFoodCost` call, unlike `getRecipeById`/`getAll`) — found 2026-07-25 while writing tests. Inconsistent API shape: client must do a follow-up GET to see cost right after creating/updating. Unclear if intentional — decide and either add `withFoodCost` to create/update responses or document why not.
 
 ## Current Priorities
-1. Recipes: bring up to testing standard (zero test coverage remains)
+1. Recipes review fully closed — decide on the `foodCost`-in-create/update-response question above, then move to Phase 1 backend items (see PRODUCT_SPEC.md roadmap)
 2. Merge or reconcile `chore/update-readme` branch with backend `main`
 3. Move on to Phase 1 backend items (see PRODUCT_SPEC.md roadmap) only after 1-2 are clean
 
