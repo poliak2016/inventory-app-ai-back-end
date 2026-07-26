@@ -105,14 +105,17 @@ export const recipesService = {
         { ...rest, category_id: categoryId ?? null, organization_id },
         client
       );
-
-      const insertedIngredients = await recipesRepository.replaceIngredients(
+      await recipesRepository.replaceIngredients(
         recipe.id,
         ingredients,
         client
       );
 
-      return { ...recipe, ingredients: insertedIngredients };
+       const freshIngredients = await recipesRepository.getIngredients(
+        recipe.id,
+        client
+      )
+      return { ...withFoodCost(recipe,  freshIngredients), ingredients: freshIngredients};
     });
   },
 
@@ -153,11 +156,10 @@ export const recipesService = {
         throw new NotFoundError("Recipe");
       }
 
-      const newIngredients = ingredients
-        ? await recipesRepository.replaceIngredients(id, ingredients, client)
-        : await recipesRepository.getIngredients(id, client);
+       if(ingredients){await recipesRepository.replaceIngredients(id, ingredients, client)}
+        const freshIngredients = await recipesRepository.getIngredients(id, client);
 
-      return { ...updated, ingredients: newIngredients };
+      return { ...withFoodCost(updated, freshIngredients), ingredients: freshIngredients };
     });
   },
 

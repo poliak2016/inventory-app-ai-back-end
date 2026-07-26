@@ -27,6 +27,7 @@ describe("recipes API (integration) ", () => {
 
       expect(res.statusCode).toBe(201)
       expect(res.body.data.id).toBeDefined()
+      expect(res.body.data.foodCost).toBeDefined()
   })
 
   it("GET/api/recipes/id - get recipe by id --> 200", async() => {
@@ -89,6 +90,7 @@ describe("recipes API (integration) ", () => {
     expect(res.statusCode).toBe(200)
     expect(res.body.data.id).toBeDefined()
     expect(res.body.data.name).toBe(updateRecipe.name)
+    expect(res.body.data.foodCost).toBeDefined()
   })
 
   it("DELETE/api/recipe/id - delete recipe -- 204", async() => {
@@ -182,7 +184,6 @@ describe("recipes API (integration) ", () => {
 
   it("POST/api/recipe - missed ingredients --> 400", async() =>{
     const token = await createAdmin()
-
     const recipeData = {
       name: "test name"
       }
