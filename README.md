@@ -113,3 +113,4 @@ npm run dev
 ```bash
 npm run docker:dev
 ```
+<!-- redeploy-trigger: 2026-08-10T15:21:13Z -->
