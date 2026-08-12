@@ -1,0 +1,57 @@
+name: CI
+
+# "push: branches: [main]" is required as-is for Railway's "Wait for CI" to
+# recognize this workflow and gate deploys on it. pull_request is here too
+# so a PR (if we ever open one) gets the same signal before merge.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same command you already run locally (npm run docker:test): builds
+      # the Dockerfile's "test" stage, spins up Postgres, runs migrations,
+      # then jest — all inside containers. CI doesn't reinvent this, it just
+      # automates the exact thing you'd type by hand.
+      - name: Write CI-only test env (throwaway values, never real secrets)
+        run: |
+          cat > .env.docker.test <<'EOF'
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=ci_test_password
+          POSTGRES_DB=inventory_app_test
+          DATABASE_URL=postgres://postgres:ci_test_password@db_test:5432/inventory_app_test
+          REDIS_URL=redis://redis:6379
+          REDIS_ENABLE=false
+          RATE_LIMIT_WINDOW_SEC=60
+          RATE_LIMIT_MAX=20
+          JWT_ACCESS_SECRET=ci_test_access_secret
+          JWT_REFRESH_SECRET=ci_test_refresh_secret
+          JWT_EXPIRES_IN=17000
+          JWT_ACCESS_EXPIRES_IN=15m
+          JWT_REFRESH_EXPIRES_IN=30d
+          BCRYPT_SALT_ROUNDS=10
+          EOF
+
+      - name: Run test suite (docker compose, matches npm run docker:test)
+        run: docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from api
+
+      - name: Tear down containers
+        if: always()
+        run: docker compose -f docker-compose.test.yml down -v
