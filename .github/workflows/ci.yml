@@ -37,6 +37,7 @@ jobs:
           POSTGRES_PASSWORD=ci_test_password
           POSTGRES_DB=inventory_app_test
           DATABASE_URL=postgres://postgres:ci_test_password@db_test:5432/inventory_app_test
+          CLIENT_URL=http://localhost:5173
           REDIS_URL=redis://redis:6379
           REDIS_ENABLE=false
           RATE_LIMIT_WINDOW_SEC=60
