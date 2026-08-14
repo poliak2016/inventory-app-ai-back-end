@@ -114,3 +114,7 @@ npm run dev
 npm run docker:dev
 ```
 <!-- redeploy-trigger: 2026-08-10T15:21:13Z -->
+
+<!-- autodeploy-verify: 2026-08-14T16:16:51Z -->
+
+<!-- wait-for-ci-verify: 2026-08-14T16:21:35Z -->
