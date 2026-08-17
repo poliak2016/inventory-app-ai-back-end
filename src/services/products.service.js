@@ -1,4 +1,4 @@
-import { NotFoundError, ValidationError } from "../errors/base.error.js";
+import { ConflictError, NotFoundError, ValidationError } from "../errors/base.error.js";
 import { productsRepository } from "../repositories/products.repository.js";
 import { categoryRepository } from "../repositories/category.repository.js";
 import { getOrganizationId } from "../shared/auth/getOrganizationId.js";
@@ -121,12 +121,18 @@ export const productsService = {
 
   deleteProduct: async (user, id) => {
     const organization_id = getOrganizationId(user);
-
+    let result;
     if (!id) {
       throw new ValidationError("Product ID is required");
     }
-
-    const result = await productsRepository.delete(organization_id, id);
+    try {
+      result = await productsRepository.delete(organization_id, id);
+    } catch (error) {
+      if (error.code === "23503") {
+        throw new ConflictError("Stock movements exist for this product");
+      }
+      throw error;
+    }
 
     if (!result) {
       throw new NotFoundError("Product");
