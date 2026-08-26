@@ -8,6 +8,7 @@ import stockMovementRoutes from "./routes/stock-movement.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
 import organizationRoutes from "./routes/organization.routes.js";
 import recipeRoutes from "./routes/recipe.routes.js";
+import suppliersRoutes from "./routes/suppliers.routes.js"
 
 import { errorMiddleware } from "./middleware/error/error.middleware.js";
 import { requestLogger } from "./middleware/logger/request-logger.middleware.js";
@@ -35,6 +36,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/organizations", organizationRoutes);
 app.use("/api/stock/movements", stockMovementRoutes);
 app.use("/api/recipes", recipeRoutes);
+app.use("/api/suppliers", suppliersRoutes)
 
 app.use(errorMiddleware);
 
