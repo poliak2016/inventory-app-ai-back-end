@@ -156,7 +156,8 @@ export const recipesService = {
         throw new NotFoundError("Recipe");
       }
 
-       if(ingredients){await recipesRepository.replaceIngredients(id, ingredients, client)}
+       if(ingredients)
+        {await recipesRepository.replaceIngredients(id, ingredients, client)}
         const freshIngredients = await recipesRepository.getIngredients(id, client);
 
       return { ...withFoodCost(updated, freshIngredients), ingredients: freshIngredients };
