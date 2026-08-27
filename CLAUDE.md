@@ -49,17 +49,18 @@ Every resource needs: CRUD happy path · 401/403 · multi-tenant isolation (cros
 ## Known Open Issues
 _(update this list as items are resolved — do not let it silently go stale)_
 
-- `[BLOCKER]` recipes: `replaceIngredients` doesn't validate `productId` belongs to the recipe's organization — cross-tenant injection risk
-- recipes: update schema marks all fields optional → omitting a field on PUT nulls it (or resets `yieldUnit` to default)
-- recipes: `foodCost` calculation ignores unit conversion between recipe and product units
-- recipes: N+1 queries in `getAll` and `replaceIngredients`
-- recipes: zero test coverage — blocks "testing standard" above
+- ~~`[BLOCKER]` recipes: `replaceIngredients` doesn't validate `productId` belongs to the recipe's organization~~ — fixed 2026-07-18 (`d71432b`): `productsRepository.findByIds` + Zod duplicate check + service-level ownership check before the write transaction
+- ~~`[BLOCKER]` recipes + products: `categoryId` accepted from client with no organization check~~ — fixed 2026-07-18 (`259dc7c`): `categoryRepository.findById` added, wired into `recipes.service.js` and `products.service.js` before the write
+- ~~recipes: update schema marks all fields optional → omitting a field on PUT nulls it~~ — fixed 2026-07-20 (`ff23385`): `qUpdateRecipe` uses `COALESCE($n, column)`, repository sends real `null` for omitted fields (including `yieldUnit`, previously defaulted to "g")
+- ~~recipes: `foodCost` calculation ignores unit conversion between recipe and product units~~ — resolved 2026-07-21: not a code bug, it's a doc/convention issue. `computeFoodCost` (`quantity × price`) is correct as long as `products.price` always means "price per `products.unit`" — confirmed this holds structurally (`ingredientSchema` has no unit field of its own, always inherits the product's unit). Fixed the misleading "ціна за кг" wording in `PRODUCT_SPEC.md` instead of touching the calculation. See Decision Log entry 2026-07-21.
+- ~~recipes: N+1 queries in `getAll` and `replaceIngredients`~~ — fixed 2026-07-24 (`8f4e2ba`): `getAll` batches ingredient fetch via `qGetIngredientsByRecipeIds` (`= ANY($1::uuid[])`) + `Map` grouping instead of per-recipe queries; `replaceIngredients` uses a dynamically-sized multi-row `INSERT` instead of a per-ingredient loop
+- ~~recipes: zero test coverage~~ — fixed 2026-07-25: `tests/integration/recipes/recipes.test.js` covers CRUD happy path, 401/403, cross-org isolation (404), validation (400, including duplicate `productId`). New helpers: `tests/helpers/product.helper.js` (`createProduct`), `authorization()` added to `auth.helper.js`. Full suite: 11 test files, 46 tests, all passing.
+- ~~recipes: `createRecipe`/`updateRecipe` responses don't include `foodCost`/`foodCostPercentage`~~ — fixed 2026-07-26: both now call `getIngredients(id, client)` after writing (fresh data with `productPrice` via `JOIN`, since `replaceIngredients`'s own `RETURNING` doesn't have it) and wrap the result with `withFoodCost`. `updateRecipe`'s two branches (ingredients changed vs not) both converge on the same fresh fetch, no more asymmetry. Test coverage added for both.
+- ~~category: `qFindById` had a typo (`organization_id = 1$1`) that would have thrown on every lookup~~ — fixed independently on `main` (`87b2d8d`) while `chore/update-readme` was reconciled; kept `main`'s corrected query during the merge.
 
 ## Current Priorities
-1. Resolve `[BLOCKER]` above before any further recipes work
-2. Recipes: fix remaining bugs, then bring up to testing standard
-3. Merge or reconcile `chore/update-readme` branch with backend `main`
-4. Move on to Phase 1 backend items (see PRODUCT_SPEC.md roadmap) only after 1-3 are clean
+1. Recipes review fully closed, `chore/update-readme` reconciled into `main` — move to Phase 1 backend items (see PRODUCT_SPEC.md roadmap)
+2. Move on to Phase 1 backend items (see PRODUCT_SPEC.md roadmap)
 
 ## End of Session Checklist
 
