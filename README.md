@@ -73,16 +73,26 @@ Stock Movements:
 - `POST /api/stock/movements`
 - `GET /api/stock/movements/:productId/history`
 
+Recipes:
+
+- `GET /api/recipes`
+- `GET /api/recipes/:id`
+- `POST /api/recipes`
+- `PUT /api/recipes/:id`
+- `DELETE /api/recipes/:id`
+
+Recipes track a list of ingredients (`productId` + `quantity`), each of which must reference an existing product in the caller's organization. `foodCost`/`foodCostPercentage` are computed on read (never cached) from current product prices, and returned on every response including create/update.
 
 ## Testing
 
-36 integration tests covering:
+46 integration tests covering:
 
 - Auth — login, registration, refresh rotation, RBAC
 - Products — CRUD, pagination, validation, tenant isolation
 - Categories — CRUD, validation
 - Stock Movements — IN/OUT, insufficient stock, history
 - Organizations — GET/PATCH profile
+- Recipes — CRUD, tenant isolation, RBAC, validation (incl. cross-tenant `productId`/duplicate ingredients)
 
 ```bash
 npm test

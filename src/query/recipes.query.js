@@ -60,14 +60,14 @@ export const qCreateRecipe = `
 export const qUpdateRecipe = `
   UPDATE ${RECIPES_TABLE}
   SET
-    name = $3,
-    instructions = $4,
-    yield_weight = $5,
-    yield_unit = $6,
-    portions = $7,
-    sale_price = $8,
-    photo_url = $9,
-    category_id = $10,
+    name = COALESCE($3, name),
+    instructions = COALESCE($4, instructions),
+    yield_weight = COALESCE($5, yield_weight),
+    yield_unit = COALESCE($6, yield_unit),
+    portions = COALESCE($7, portions),
+    sale_price = COALESCE($8, sale_price),
+    photo_url = COALESCE($9, photo_url),
+    category_id = COALESCE($10, category_id),
     updated_at = NOW()
   WHERE organization_id = $1
     AND id = $2
@@ -99,10 +99,12 @@ export const qGetIngredientsByRecipeId = `
   ORDER BY ri.created_at ASC
 `;
 
-export const qInsertIngredient = `
-  INSERT INTO ${RECIPE_INGREDIENTS_TABLE} (recipe_id, product_id, quantity)
-  VALUES ($1, $2, $3)
-  RETURNING id, recipe_id AS "recipeId", product_id AS "productId", quantity
+export const qGetIngredientsByRecipeIds = `
+  SELECT ${RECIPE_INGREDIENT_COLUMNS}
+  FROM  ${RECIPE_INGREDIENTS_TABLE} ri
+  JOIN products p ON p.id = ri.product_id
+  WHERE ri.recipe_id = ANY($1::uuid[])
+  ORDER BY ri.recipe_id DESC
 `;
 
 export const qDeleteIngredientsByRecipeId = `

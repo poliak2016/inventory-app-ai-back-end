@@ -37,12 +37,23 @@ export const recipesService = {
       categoryId ?? null
     );
 
-    const recipes = await Promise.all(
-      rows.map(async (recipe) => {
-        const ingredients = await recipesRepository.getIngredients(recipe.id);
-        return withFoodCost(recipe, ingredients);
-      })
-    );
+    const recipeIds = rows.map((recipe) => recipe.id);
+
+    const ingredients = await recipesRepository.getIngredientsByRecipeIds(recipeIds);
+
+    const map = new Map();
+
+    ingredients.forEach((ingredient) => {
+      if (!map.has(ingredient.recipeId)) {
+        map.set(ingredient.recipeId, []);
+      }
+      map.get(ingredient.recipeId).push(ingredient);
+    });
+
+    const recipes = rows.map((recipe) => {
+      const recipeIngredients = map.get(recipe.id) ?? [];
+      return withFoodCost(recipe, recipeIngredients);
+    });
 
     const hasMore = offset + limit < total;
 
@@ -93,14 +104,14 @@ export const recipesService = {
         { ...rest, category_id: categoryId ?? null, organization_id },
         client
       );
-
-      const insertedIngredients = await recipesRepository.replaceIngredients(
+      await recipesRepository.replaceIngredients(
         recipe.id,
         ingredients,
         client
       );
 
-      return { ...recipe, ingredients: insertedIngredients };
+      const freshIngredients = await recipesRepository.getIngredients(recipe.id, client);
+      return { ...withFoodCost(recipe, freshIngredients), ingredients: freshIngredients };
     });
   },
 
@@ -141,11 +152,12 @@ export const recipesService = {
         throw new NotFoundError("Recipe");
       }
 
-      const newIngredients = ingredients
-        ? await recipesRepository.replaceIngredients(id, ingredients, client)
-        : await recipesRepository.getIngredients(id, client);
+      if (ingredients) {
+        await recipesRepository.replaceIngredients(id, ingredients, client);
+      }
+      const freshIngredients = await recipesRepository.getIngredients(id, client);
 
-      return { ...updated, ingredients: newIngredients };
+      return { ...withFoodCost(updated, freshIngredients), ingredients: freshIngredients };
     });
   },
 

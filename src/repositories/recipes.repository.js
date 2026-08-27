@@ -1,13 +1,13 @@
 import { getExecutor } from "../db/executor.js";
 import {
   qGetAll,
+  qGetIngredientsByRecipeIds,
   qCountRecipes,
   qFindRecipeById,
   qCreateRecipe,
   qUpdateRecipe,
   qDeleteRecipe,
   qGetIngredientsByRecipeId,
-  qInsertIngredient,
   qDeleteIngredientsByRecipeId,
 } from "../query/recipes.query.js";
 
@@ -63,7 +63,7 @@ export const recipesRepository = {
       name,
       instructions ?? null,
       yieldWeight ?? null,
-      yieldUnit ?? "g",
+      yieldUnit ?? null,
       portions ?? null,
       salePrice ?? null,
       photoUrl ?? null,
@@ -84,19 +84,36 @@ export const recipesRepository = {
     return rows;
   },
 
+  async getIngredientsByRecipeIds(recipeIds, db = null) {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qGetIngredientsByRecipeIds, [recipeIds]);
+    return rows;
+  },
+
   async replaceIngredients(recipeId, ingredients, db = null) {
     const executor = getExecutor(db);
     await executor.query(qDeleteIngredientsByRecipeId, [recipeId]);
 
-    const inserted = [];
-    for (const ingredient of ingredients) {
-      const { rows } = await executor.query(qInsertIngredient, [
-        recipeId,
-        ingredient.productId,
-        ingredient.quantity,
-      ]);
-      inserted.push(rows[0]);
-    }
-    return inserted;
+    const params = ingredients.flatMap((ingredient) => [
+      recipeId,
+      ingredient.productId,
+      ingredient.quantity,
+    ]);
+
+    const valuesClause = ingredients
+      .map((ingredient, index) => {
+        const offset = index * 3;
+        return `($${offset + 1}, $${offset + 2}, $${offset + 3})`;
+      })
+      .join(", ");
+
+    const query = `
+      INSERT INTO recipe_ingredients(recipe_id, product_id, quantity)
+      VALUES ${valuesClause}
+      RETURNING id, recipe_id AS "recipeId", product_id AS "productId", quantity
+    `;
+
+    const { rows } = await executor.query(query, params);
+    return rows;
   },
 };
