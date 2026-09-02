@@ -5,8 +5,11 @@ export const PRODUCTS_COLUMNS = `
   name,
   price,
   quantity,
+  unit,
   organization_id,
   category_id AS "categoryId",
+  avg_weight_grams AS "avgWeightGrams",
+  avg_volume_ml AS "avgVolumeMl",
   created_at AS "createdAt",
   updated_at AS "updatedAt"
 `;
@@ -40,10 +43,13 @@ export const qCreateProduct = `
     name,
     price,
     quantity,
+    unit,
+    avg_weight_grams,
+    avg_volume_ml,
     category_id,
     organization_id
   )
-  VALUES ($1, $2, $3, $4, $5)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
   RETURNING ${PRODUCTS_COLUMNS}
 `;
 
@@ -53,7 +59,10 @@ export const qUpdateProduct = `
     name = $3,
     price = $4,
     quantity = $5,
-    category_id = $6,
+    unit = $6,
+    avg_weight_grams = $7,
+    avg_volume_ml = $8,
+    category_id = $9,
     updated_at = NOW()
   WHERE organization_id = $1
     AND id = $2

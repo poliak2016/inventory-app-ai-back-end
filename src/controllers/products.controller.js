@@ -20,8 +20,8 @@ export const productsController = {
   }),
 
   createProduct: asyncHandler(async (req, res) => {
-    const { name, price, quantity, categoryId } = req.validated.body;
-    const newProduct = await productsService.createProduct(req.user, { name, price, quantity, categoryId });
+    const { name, price, quantity, unit, avgWeightGrams, avgVolumeMl, categoryId } = req.validated.body;
+    const newProduct = await productsService.createProduct(req.user, { name, price, quantity, unit, avgWeightGrams, avgVolumeMl, categoryId });
     res.status(201).json({
       status: "success",
       data: newProduct,

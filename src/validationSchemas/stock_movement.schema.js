@@ -11,7 +11,7 @@ export const createStockMovementSchema = z.object({
     required_error: "Movement type is required",
     invalid_type_error: "Movement type must be one of: in, out, adjustment",
   }),
-  quantity: z
+  quantity: z.coerce
     .number({
       required_error: "Quantity is required",
       invalid_type_error: "Quantity must be a number",

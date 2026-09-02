@@ -58,7 +58,7 @@ export const productsService = {
     return result;
   },
 
-  createProduct: async (user, { categoryId, name, price, quantity }) => {
+  createProduct: async (user, { categoryId, name, price, quantity, unit, avgWeightGrams, avgVolumeMl }) => {
     const organization_id = getOrganizationId(user);
 
      if(categoryId){
@@ -75,6 +75,9 @@ export const productsService = {
       name,
       price,
       quantity,
+      unit, 
+      avg_weight_grams: avgWeightGrams, 
+      avg_volume_ml: avgVolumeMl
     });
 
     await delCache(CACHE_KEYS.PRODUCTS.ALL(organization_id));
@@ -92,7 +95,12 @@ export const productsService = {
       throw new ValidationError("No fields provided for update");
     }
 
-    const { categoryId, ...rest } = productData;
+    const {
+      avgWeightGrams, 
+      avgVolumeMl, 
+      categoryId,
+       ...rest 
+      } = productData;
 
      if(categoryId){
           const category = await categoryRepository.findById(organization_id, categoryId)
@@ -104,7 +112,12 @@ export const productsService = {
     const result = await productsRepository.update(
       organization_id,
       id,
-      { ...rest, category_id: categoryId ?? null }
+      {
+      ...rest, 
+      category_id: categoryId ?? null, 
+      avg_weight_grams: avgWeightGrams, 
+      avg_volume_ml: avgVolumeMl 
+    }
     );
 
     if (!result) {

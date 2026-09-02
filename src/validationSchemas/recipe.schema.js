@@ -1,6 +1,6 @@
 import { z } from "zod";
+import { unitEnum } from "../shared/units/unit.schema.js";
 
-const unitEnum = z.enum(["g", "ml", "pcs"]);
 const lookingForDublikats = (val) => {
     const ids = val.map((ingredients) => ingredients.productId)
     return new Set(ids).size === val.length
@@ -32,17 +32,17 @@ export const createRecipeSchema = z.object({
   instructions: z
     .string({ invalid_type_error: "Instructions must be a string" })
     .optional(),
-  yieldWeight: z
+  yieldWeight: z.coerce
     .number({ invalid_type_error: "Yield weight must be a number" })
     .positive("Yield weight must be greater than 0")
     .optional(),
   yieldUnit: unitEnum.optional().default("g"),
-  portions: z
+  portions: z.coerce
     .number({ invalid_type_error: "Portions must be a number" })
     .int("Portions must be an integer")
     .positive("Portions must be greater than 0")
     .optional(),
-  salePrice: z
+  salePrice: z.coerce
     .number({ invalid_type_error: "Sale price must be a number" })
     .positive("Sale price must be greater than 0")
     .optional(),

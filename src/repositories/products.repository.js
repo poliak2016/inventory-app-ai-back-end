@@ -42,7 +42,7 @@ export const productsRepository = {
   },
 
   async create(
-    { name, price, quantity, category_id, organization_id },
+    { name, price, quantity, unit, avg_weight_grams, avg_volume_ml,  category_id, organization_id },
     db = null
   ) {
     const executor = getExecutor(db);
@@ -50,6 +50,9 @@ export const productsRepository = {
       name,
       price,
       quantity,
+      unit, 
+      avg_weight_grams, 
+      avg_volume_ml,
       category_id,
       organization_id,
     ]);
@@ -59,7 +62,7 @@ export const productsRepository = {
   async update(
     organization_id,
     id,
-    { name, price, quantity, category_id },
+    { name, price, quantity, unit, avg_weight_grams, avg_volume_ml, category_id },
     db = null
   ) {
     logger.info("SQL values", {
@@ -73,6 +76,9 @@ export const productsRepository = {
       name,
       price,
       quantity,
+      unit, 
+      avg_weight_grams, 
+      avg_volume_ml,
       category_id,
     ]);
 
