@@ -91,7 +91,7 @@ describe("products API (integration)", () => {
 
   it("PUT /api/products/:id — admin updates product → 200", async () => {
     const token = await createAdmin();
-    const updateData = { price: "10.00", quantity: 1, name: "UpdateTest" };
+    const updateData = { price: "10.00", quantity: 1, name: "UpdateTest", unit: "kg",  };
 
     const created = await api
       .post("/api/products")
@@ -109,6 +109,25 @@ describe("products API (integration)", () => {
     expect(res.body.data.name).toBe(updateData.name);
     expect(Number(res.body.data.price)).toBe(10);
     expect(res.body.data.quantity).toBe(updateData.quantity);
+  });
+
+  it("PUT /api/products/:id — admin updates product without input value → 400", async () => {
+    const token = await createAdmin();
+    const updateData = { price: "", quantity: "", name: "", unit: "",  };
+
+    const created = await api
+      .post("/api/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newProduct);
+
+    const createdId = created.body.data.id;
+
+    const res = await api
+      .put(`/api/products/${createdId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updateData);
+
+    expect(res.statusCode).toBe(400);
   });
 
   it("DELETE /api/products/:id — admin deletes product → 204", async () => {
