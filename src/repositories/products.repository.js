@@ -1,4 +1,3 @@
-import { logger } from "../config/logger.js";
 import { getExecutor } from "../db/executor.js";
 import {
   qCreateProduct,
@@ -6,6 +5,7 @@ import {
   qFindByIds,
   qDeleteProduct,
   qUpdateProduct,
+  qUpdateProductWithoutCategory,
   qIncreaseProductQuantity,
   qDecreaseProductQuantity,
   qSetProductQuantity,
@@ -65,10 +65,6 @@ export const productsRepository = {
     { name, price, quantity, unit, avg_weight_grams, avg_volume_ml, category_id },
     db = null
   ) {
-    logger.info("SQL values", {
-      values: [organization_id, id, name, price, quantity, category_id],
-    });
-
     const executor = getExecutor(db);
     const { rows } = await executor.query(qUpdateProduct, [
       organization_id,
@@ -80,6 +76,23 @@ export const productsRepository = {
       avg_weight_grams, 
       avg_volume_ml,
       category_id,
+    ]);
+
+    return rows[0] ?? null;
+  },
+
+  async updateWithoutCategory(organization_id, id, { name, price, quantity, unit, avg_weight_grams, avg_volume_ml,  }, db = null)
+  {
+    const executor = getExecutor(db);
+    const { rows } = await executor.query(qUpdateProductWithoutCategory, [
+      organization_id,
+      id,
+      name,
+      price,
+      quantity,
+      unit, 
+      avg_weight_grams, 
+      avg_volume_ml,
     ]);
 
     return rows[0] ?? null;

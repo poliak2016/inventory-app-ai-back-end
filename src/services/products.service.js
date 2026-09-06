@@ -102,7 +102,26 @@ export const productsService = {
        ...rest 
       } = productData;
 
-     if(categoryId){
+    if (categoryId === undefined){
+      const result = await productsRepository.updateWithoutCategory(
+        organization_id,
+        id,
+        {
+        ...rest, 
+        avg_weight_grams: avgWeightGrams, 
+        avg_volume_ml: avgVolumeMl 
+    })
+    if (!result) {
+      throw new NotFoundError("Product");
+    }
+
+    await Promise.all([
+      delCache(CACHE_KEYS.PRODUCTS.ALL(organization_id)),
+      delCache(CACHE_KEYS.PRODUCTS.BY_ID(organization_id, id)),
+    ]);
+    return result
+
+      } else if(categoryId){
           const category = await categoryRepository.findById(organization_id, categoryId)
     
           if(!category){
@@ -114,7 +133,7 @@ export const productsService = {
       id,
       {
       ...rest, 
-      category_id: categoryId ?? null, 
+      category_id: categoryId ?? null,
       avg_weight_grams: avgWeightGrams, 
       avg_volume_ml: avgVolumeMl 
     }

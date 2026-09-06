@@ -2,6 +2,7 @@
 import { api } from "../../setup/testClient.js";
 import { createAdmin, createStaff } from "../../helpers/auth.helper.js";
 import { newProduct } from "../../fixtures/product.fixture.js";
+import { createProduct } from "../../helpers/product.helper.js";
 
 describe("products API (integration)", () => {
   it("GET /api/products/:id — org B cannot access org A product → 404", async () =>{
@@ -109,6 +110,24 @@ describe("products API (integration)", () => {
     expect(res.body.data.name).toBe(updateData.name);
     expect(Number(res.body.data.price)).toBe(10);
     expect(res.body.data.quantity).toBe(updateData.quantity);
+  });
+
+   it("PUT /api/products/:id — admin updates product without categoryId→ 200", async () => {
+    const token = await createAdmin();
+    const updateData = { price: "10.00", quantity: 1, name: "UpdateTest", unit: "kg", categoryId: undefined};
+
+    const created = await createProduct(token)
+
+    const createdId = created.body.data.id;
+    const categoryId = created.body.data.categoryId
+
+    const res = await api
+      .put(`/api/products/${createdId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updateData);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.data.categoryId).toBe(categoryId)
   });
 
   it("PUT /api/products/:id — admin updates product without input value → 400", async () => {

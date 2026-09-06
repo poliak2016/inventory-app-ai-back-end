@@ -26,7 +26,8 @@ export const createProductSchema = z.object({
     .string({
       invalid_type_error: "Category ID must be a string",
     })
-    .uuid("Category ID must be a valid UUID").optional(),
+    .uuid("Category ID must be a valid UUID")
+    .nullish(),
   avgWeightGrams: z
     .coerce.number()
     .positive().
@@ -70,7 +71,7 @@ export const updateProductSchema = z.object({
       invalid_type_error: "Category ID must be a string",
     })
     .uuid("Category ID must be a valid UUID")
-    .optional(),
+    .nullish(),
   avgWeightGrams: z
     .coerce.number()
     .positive().

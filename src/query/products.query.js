@@ -69,6 +69,21 @@ export const qUpdateProduct = `
   RETURNING ${PRODUCTS_COLUMNS}
 `;
 
+export const qUpdateProductWithoutCategory = `
+  UPDATE ${PRODUCTS_TABLE}
+  SET
+    name = $3,
+    price = $4,
+    quantity = $5,
+    unit = COALESCE($6, unit),
+    avg_weight_grams = $7,
+    avg_volume_ml = $8,
+    updated_at = NOW()
+  WHERE organization_id = $1
+    AND id = $2
+  RETURNING ${PRODUCTS_COLUMNS}
+`;
+
 export const qIncreaseProductQuantity = `
   UPDATE ${PRODUCTS_TABLE}
   SET
