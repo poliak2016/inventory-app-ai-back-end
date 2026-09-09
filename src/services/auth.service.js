@@ -19,17 +19,6 @@ import {
 } from "../infrastructure/auth/helpers/passwordHash.js";
 import { v4 as uuidv4 } from "uuid";
 
-const buildAccessPayload = (user) => ({
-  sub: user.id,
-  email: user.email,
-  role: user.role,
-  organization_id: user.organization_id,
-});
-
-const buildRefreshPayload = (user) => ({
-  sub: user.id,
-});
-
 export const authService = {
   register: async ({ name, email, password, organizationName }) => {
     return transactionFunc(async (db) => {
@@ -139,8 +128,8 @@ export const authService = {
         throw new InvalidTokenError();
       }
 
-      const newAccessToken = signAccessToken(buildAccessPayload(user));
-      const newRefreshToken = signRefreshToken(buildRefreshPayload(user));
+      const newAccessToken = signAccessToken(user);
+      const newRefreshToken = signRefreshToken(user);
 
       const newHash = hashRefreshToken(newRefreshToken);
 
